@@ -19,6 +19,7 @@ export type LiveDeskOptions = {
   applicationId: string;
   baseUrl?: string;
   telegramUrl: string;
+  showModelPicker: boolean;
 };
 
 const q = <T extends Element = HTMLElement>(selector: string) =>
@@ -35,6 +36,7 @@ export function mountLiveDesk({
   applicationId,
   baseUrl,
   telegramUrl,
+  showModelPicker,
 }: LiveDeskOptions) {
   const shell = q("#desk-shell");
   if (!shell) return;
@@ -153,7 +155,7 @@ export function mountLiveDesk({
         showSidebar={false}
         walletPosition="header"
         features={{ theme: false, library: false }}
-        controlBarProps={{ hideModel: true, hideAppSecrets: true }}
+        controlBarProps={{ hideModel: !showModelPicker, hideAppSecrets: true }}
         height="100%"
         width="100%"
         className="dottie-widget"

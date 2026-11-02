@@ -13,3 +13,6 @@ export const AOMI_API_URL = env.VITE_AOMI_API_URL?.trim() || undefined;
 
 /** Dottie's Telegram bot, e.g. https://t.me/<bot_username>. */
 export const DOTTIE_TELEGRAM_URL = env.VITE_DOTTIE_TELEGRAM_URL?.trim() || "";
+
+/** Local stacks may lack the default model's supplier, so they can show the picker. */
+export const DOTTIE_SHOW_MODEL_PICKER = env.VITE_DOTTIE_SHOW_MODEL === "1";

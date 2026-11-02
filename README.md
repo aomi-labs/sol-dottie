@@ -105,10 +105,31 @@ per second per provider per process, bounded cache and response sizes, a 429
 cooldown and a five-second queue limit. Quotes are never cached. Several app
 instances need an operator-level rate-limit plan before a large workshop.
 
+## Run a full local stack
+
+`scripts/local-stack.sh` runs the site against a local Aomi stack that has
+loaded `apps/dottie`:
+
+```sh
+scripts/local-stack.sh start    # compile the app, start the stack and the site
+scripts/local-stack.sh status
+scripts/local-stack.sh stop
+```
+
+It needs `aomi-dev`, `aomi-build`, `psql`, the local Supabase Postgres on port
+54322, and `OPENAI_API_KEY`, `OPENROUTER_API_KEY` and `ANTHROPIC_API_KEY` in the
+environment. The stack runs in its own `dottie-local` workspace with its own
+database, so other local stacks keep running. The portal is at
+`http://localhost:8078`.
+
+The script writes `web/.env.local` with the local application ID. It also sets
+`VITE_DOTTIE_SHOW_MODEL=1`, which shows the model picker. Pick a model whose
+supplier has credit, such as `anthropic:claude-sonnet-5-5`.
+
 ## Live chat setup
 
 The site needs an application ID from a host that has loaded `apps/dottie`. No
-hosted ID exists yet.
+hosted ID exists yet. For a local one, use `scripts/local-stack.sh`.
 
 1. Import this repository root in Aomi Build, or use a local backend that loads
    the app.

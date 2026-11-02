@@ -4,6 +4,7 @@ import { initChrome, initMockDesk, setMode } from "./mock-desk";
 import {
   AOMI_API_URL,
   DOTTIE_APPLICATION_ID,
+  DOTTIE_SHOW_MODEL_PICKER,
   DOTTIE_TELEGRAM_URL,
 } from "./site-config";
 
@@ -34,6 +35,7 @@ if (live) {
       applicationId,
       baseUrl: AOMI_API_URL,
       telegramUrl,
+      showModelPicker: DOTTIE_SHOW_MODEL_PICKER,
     }),
   );
 } else {

@@ -108,3 +108,20 @@
 #desk-shell .aui-thread-welcome-suggestions {
   display: none;
 }
+
+/* AomiWidget 4.0.2 has no welcome or placeholder prop, so the copy is swapped
+   in CSS, which leaves the widget's own DOM alone. */
+#desk-shell .aui-thread-welcome-title {
+  font-size: 0;
+}
+#desk-shell .aui-thread-welcome-title::after {
+  content: "Hi, I’m Dottie. What should we check?";
+  font-size: 30px;
+}
+#desk-shell .aui-composer-input .pointer-events-none {
+  font-size: 0;
+}
+#desk-shell .aui-composer-input .pointer-events-none::after {
+  content: "Ask Dottie to check a token, quote FluxBeam, or look up Solomon…";
+  font-size: 15px;
+}

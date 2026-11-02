@@ -28,8 +28,10 @@
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 24px;
+  overflow-x: clip;
 }
 body {
+  overflow-x: clip;
   margin: 0;
   background: var(--paper);
   color: var(--ink);

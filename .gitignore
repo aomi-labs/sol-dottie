@@ -4,3 +4,6 @@ target
 .env.local
 *.tsbuildinfo
 .wrangler
+plugins
+.cargo-home
+/pnpm-lock.yaml

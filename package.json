@@ -1,29 +1,10 @@
 {
-  "name": "sol-dottie",
-  "version": "0.1.0",
+  "name": "sol-dottie-monorepo",
   "private": true,
-  "type": "module",
   "scripts": {
-    "dev": "vite --port 3004",
-    "build": "tsc --noEmit && vite build",
-    "preview": "vite preview --port 3004"
-  },
-  "dependencies": {
-    "@aomi-labs/widget": "4.0.2",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0"
-  },
-  "devDependencies": {
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "@vitejs/plugin-react": "^4.7.0",
-    "typescript": "^5",
-    "vite": "^7.2.2"
-  },
-  "packageManager": "pnpm@10.28.0",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild"
-    ]
+    "dev": "pnpm -C web dev",
+    "build:web": "pnpm -C web build",
+    "test:app": "cargo test",
+    "test:trace": "node --test tests/*.test.mjs"
   }
 }

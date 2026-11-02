@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "platform": "community",
+  "applications": [
+    "apps/dottie/aomi.toml"
+  ]
+}

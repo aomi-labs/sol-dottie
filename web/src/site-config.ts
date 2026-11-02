@@ -4,7 +4,9 @@ const env = import.meta.env;
 
 /** Hosted Sol Dottie App. Empty ships the sample-data concept desk. */
 export const DOTTIE_APPLICATION_ID =
-  env.VITE_DOTTIE_APPLICATION_ID?.trim() || "";
+  env.VITE_DOTTIE_APPLICATION_ID?.trim() ||
+  env.VITE_DOTTIE_APP_ID?.trim() ||
+  "";
 
 /** Aomi backend. Undefined means the widget default, https://chat.aomi.dev. */
 export const AOMI_API_URL = env.VITE_AOMI_API_URL?.trim() || undefined;

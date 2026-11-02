@@ -103,3 +103,8 @@
     display: none;
   }
 }
+
+/* The widget's default welcome suggestions are EVM. The playbook cards replace them. */
+#desk-shell .aui-thread-welcome-suggestions {
+  display: none;
+}

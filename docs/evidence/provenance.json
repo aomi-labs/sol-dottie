@@ -1,0 +1,51 @@
+{
+  "captured_on": "2026-11-02",
+  "note": "Public read responses. FluxBeam instruction POST only constructs unsigned bytes; no signing or broadcast. Fixtures are captured evidence, never live prices. Trailing whitespace normalized in Solomon documentation snapshot.",
+  "files": [
+    {
+      "file": "rugcheck-openapi.txt",
+      "source": "https://api.rugcheck.xyz/swagger/doc.json",
+      "sha256": "812adaed36e20b3bba66a50b0c66229df8cddd8c9a1f9db990a54c773730ddae"
+    },
+    {
+      "file": "fluxbeam-openapi.txt",
+      "source": "https://api.fluxbeam.xyz/swagger/doc.json",
+      "sha256": "9ed1d2f258d3ccf97458f53108809f3ce4c9de31e93cfc736141c933684d00a8"
+    },
+    {
+      "file": "solomon-docs.txt",
+      "source": "https://docs.solomonlabs.org/llms-full.txt",
+      "sha256": "d191bd73d295f3b56f5defad604e89da1801cc83a71523e346827601aab69234"
+    },
+    {
+      "file": "nvda-metadata.txt",
+      "source": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/solana/assets/Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh/info.json",
+      "sha256": "7afe8322d9b50b2cd2756ed37cb4dc30ba5d78a1e6662bcf36f6f13287ff8ff9"
+    },
+    {
+      "file": "stocks-search.json",
+      "source": "https://api.fluxbeam.xyz/v1/search/tokens?q=NVDAx&limit=5",
+      "sha256": "b9ebffc7ac122ea78fbde95fd22a70fd638782089fa7668105c3eef355fd2629"
+    },
+    {
+      "file": "fluxbeam-quote.json",
+      "source": "https://api.fluxbeam.xyz/v1/quote",
+      "sha256": "5e1c74e94d81ec54d227f79c6f31b644d555cd04e98c27e91db772ceaba50c70"
+    },
+    {
+      "file": "fluxbeam-instruction.json",
+      "source": "https://api.fluxbeam.xyz/v1/swap/instruction",
+      "sha256": "b20cf19bb5c0250b6b652416156c90a8d5295f3f7bc7f3cf55854ddfcba55ea8"
+    },
+    {
+      "file": "rugcheck-report.json",
+      "source": "https://api.rugcheck.xyz/v1/tokens/FLUXBmPhT3Fd1EDVFdg46YREqHBeNypn1h4EbnTzWERX/report",
+      "sha256": "0207d6b8a7ceab5c6bc91786403236ab9e16dd596413a9329a489579819e3128"
+    },
+    {
+      "file": "solomon-position.json",
+      "source": "https://yaas.solomonlabs.io/api/yaas/wallet/11111111111111111111111111111111?view=v2",
+      "sha256": "27d6b5da582f818ecda85445673c58e650dbe404c12e1f145b491753faa5169e"
+    }
+  ]
+}

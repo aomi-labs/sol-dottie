@@ -5,12 +5,14 @@ import "@aomi-labs/widget/styles.css";
 import { markScenario, showModal, type ScenarioKey } from "./mock-desk";
 
 // The playbook buttons put a starter prompt in the composer. They never send:
-// the visitor adds the token, reads it and presses send.
+// the visitor reads it, finishes it and presses send. They stay within what the
+// Rust app in apps/dottie can answer.
 const PROMPTS: Record<ScenarioKey, string> = {
-  check: "Check this token for risks before I buy $10: ",
-  trade: "Quote a $10 USDC swap through FluxBeam into: ",
-  earn: "Show me Solomon’s USDv earning workflow. What can I do with $10 USDC?",
-  stocks: "Quote $10 USDC of NVIDIA xStock (NVDAx) through Jupiter.",
+  check: "Check this token with RugCheck before I buy: ",
+  trade: "Quote a FluxBeam swap of 0.01 SOL into FLUXB.",
+  earn: "What is Solomon USDv, and what does my Solomon position look like?",
+  stocks:
+    "Show me NVIDIA xStock (NVDAx) from your asset list and a Jupiter quote for 0.01 SOL into it.",
 };
 
 export type LiveDeskOptions = {
@@ -114,7 +116,12 @@ export function mountLiveDesk({
   const routing: AomiRoutingConfig =
     Number.isSafeInteger(numericId) && numericId > 0
       ? {
-          targets: [{ mode: "direct", apps: [{ applicationId: numericId }] }],
+          targets: [
+            {
+              mode: "direct",
+              apps: [{ applicationId: numericId, app: "dottie" }],
+            },
+          ],
           defaultMode: "direct",
         }
       : { targets: [{ mode: "auto" }] };
@@ -128,10 +135,25 @@ export function mountLiveDesk({
         routing={routing}
         auth={{ type: "browser_wallet" }}
         walletFamilies={["solana"]}
-        wallets={{ evm: false, solana: { preset: "popular" } }}
+        wallets={{
+          evm: false,
+          solana: {
+            preset: "popular",
+            networks: [
+              {
+                id: "solana:mainnet",
+                label: "Solana",
+                cluster: "solana:mainnet",
+                rpcHttpUrl: "https://api.mainnet-beta.solana.com",
+                isDefault: true,
+              },
+            ],
+          },
+        }}
         showSidebar={false}
         walletPosition="header"
-        features={{ theme: false }}
+        features={{ theme: false, library: false }}
+        controlBarProps={{ hideModel: true, hideAppSecrets: true }}
         height="100%"
         width="100%"
         className="dottie-widget"

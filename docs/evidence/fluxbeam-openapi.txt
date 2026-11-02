@@ -1,0 +1,1490 @@
+{
+    "schemes": ["https"],
+    "swagger": "2.0",
+    "info": {
+        "description": "FluxBeam official API",
+        "title": "FluxBeam DEX API",
+        "contact": {},
+        "license": {},
+        "version": "1"
+    },
+    "host": "api.fluxbeam.xyz",
+    "basePath": "",
+    "paths": {
+        "/v1/frontrun-ix": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Util"
+                ],
+                "summary": "Get a frontrun protection instruction",
+                "responses": {
+                    "200": {
+                        "description": "Returns a swap quote",
+                        "schema": {
+                            "$ref": "#/definitions/services.PriorityFeeResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/jito-fees": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Util"
+                ],
+                "summary": "Get current jito fees",
+                "responses": {
+                    "200": {
+                        "description": "Returns a swap quote",
+                        "schema": {
+                            "$ref": "#/definitions/services.PriorityFeeResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/lockers": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Lockers"
+                ],
+                "summary": "Get all flux lockers",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number for results",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit number of results",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Returns a list of lockers",
+                        "schema": {
+                            "$ref": "#/definitions/dto.LockerIndexResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/lockers/{id}": {
+            "get": {
+                "description": "Get detailed information about a specific flux locker",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Lockers"
+                ],
+                "summary": "Show flux Vault",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Locker ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Locker information",
+                        "schema": {
+                            "$ref": "#/definitions/dto.LockerShowResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/lockers/{id}/mint": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Lockers"
+                ],
+                "summary": "Get all flux lockers for a specific mint",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number for results",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit number of results",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Returns a list of lockers",
+                        "schema": {
+                            "$ref": "#/definitions/dto.LockerIndexResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/pools": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Pools"
+                ],
+                "summary": "Get all pools",
+                "responses": {
+                    "200": {
+                        "description": "Returns a list of pools",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/fluxbeam_api.Pool"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/pools/{id}": {
+            "get": {
+                "description": "Get pool by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Pools"
+                ],
+                "summary": "Show Pool",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Pool Public Key",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/fluxbeam_api.TokenDetail"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/price": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Swap"
+                ],
+                "summary": "Returns the current price of a pool",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Source token",
+                        "name": "inputMint",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Token Pool",
+                        "name": "pool",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Returns a price quote",
+                        "schema": {
+                            "$ref": "#/definitions/dto.PriceResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/priority-fees": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Util"
+                ],
+                "summary": "Get current priority fees for active DeFi markets",
+                "responses": {
+                    "200": {
+                        "description": "Returns a swap quote",
+                        "schema": {
+                            "$ref": "#/definitions/services.PriorityFeeResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/quote": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Swap"
+                ],
+                "summary": "Get a quote for a token swap",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Source token",
+                        "name": "inputMint",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Destination token",
+                        "name": "outputMint",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Source token input amount",
+                        "name": "amount",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Slippage in BPS",
+                        "name": "slippageBps",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Returns a swap quote",
+                        "schema": {
+                            "$ref": "#/definitions/dto.QuoteResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/search/pools": {
+            "get": {
+                "description": "Search for a pool matching the q",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Pools",
+                    "Pools"
+                ],
+                "summary": "Search Pools",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search query",
+                        "name": "q",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Remove scam tokens",
+                        "name": "secure",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit amount of results returned",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page of response",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Token information",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/fluxbeam_api.TokenDetail"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/search/pools/mints": {
+            "get": {
+                "description": "Find pools matching 2 mints",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Pools",
+                    "Pools"
+                ],
+                "summary": "Find Pools for given mint pair",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Input mint",
+                        "name": "inMint",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Output mint",
+                        "name": "outMint",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Pool information",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/fluxbeam_api.Pool"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/search/tokens": {
+            "get": {
+                "description": "Search for a token matching the q",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tokens",
+                    "Tokens"
+                ],
+                "summary": "Search Token",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search query",
+                        "name": "q",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Remove scam tokens",
+                        "name": "secure",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit amount of results returned",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Token information",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/fluxbeam_api.TokenDetail"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/spl22/bridge": {
+            "post": {}
+        },
+        "/v1/spl22/deployments": {
+            "get": {}
+        },
+        "/v1/spl22/pool-listings/{id}": {
+            "get": {}
+        },
+        "/v1/spl22/pool-mints/{id}": {
+            "get": {}
+        },
+        "/v1/spl22/pool-tickers/{id}": {
+            "get": {}
+        },
+        "/v1/spl22/pools/{id}": {
+            "get": {}
+        },
+        "/v1/spl22/search": {
+            "get": {
+                "description": "Search for a token matching the q",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tokens",
+                    "Tokens"
+                ],
+                "summary": "Search Token",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search query",
+                        "name": "q",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Token information",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.SplSearchResponse"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/swap/instruction": {
+            "post": {
+                "description": "If no pool is provided a quote will be generated.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Swap"
+                ],
+                "summary": "Returns a swap instruction for the provided quote",
+                "parameters": [
+                    {
+                        "description": "Swap",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.SwapRequestNorm"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Returns a swap instruction to be added to transaction",
+                        "schema": {
+                            "$ref": "#/definitions/dto.SwapInstructionResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/swap/transaction": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Swap"
+                ],
+                "summary": "Returns the swap transaction for the provided quote",
+                "parameters": [
+                    {
+                        "description": "Swap",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.SwapRequestNorm"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Returns a swap quote",
+                        "schema": {
+                            "$ref": "#/definitions/dto.SwapResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/token_pools": {
+            "get": {
+                "description": "Retrieves all mints of tokens associated with the pool",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Pools"
+                ],
+                "summary": "List all token mints",
+                "operationId": "token-pool-index",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new pool from a given signature",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Pools"
+                ],
+                "summary": "Create a new pool",
+                "parameters": [
+                    {
+                        "description": "Create Request",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.PoolCreateRequestNorm"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.PoolCreateResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/token_pools/details": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Pools"
+                ],
+                "summary": "Get all tokens relating to pools",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number for results",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit number of results",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Token search query",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by version 2 tokens",
+                        "name": "v2",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Returns a list of tokens",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/fluxbeam_api.TokenDetail"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/token_pools/matrix": {
+            "get": {
+                "description": "Retrieves all mints of tokens associated with the pool",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Pools"
+                ],
+                "summary": "List all token mints",
+                "operationId": "token-pool-index",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tokens": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tokens"
+                ],
+                "summary": "Get all tokens",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number for results",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit number of results",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Token search query",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by version 2 tokens",
+                        "name": "v2",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Returns a list of tokens",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/fluxbeam_api.TokenDetail"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tokens/metadata": {
+            "post": {
+                "description": "Upload metadata for a token, which includes a name, symbol, and description, and an optional file.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tools"
+                ],
+                "summary": "Upload token metadata",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "File to be uploaded",
+                        "name": "file",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Name of the token",
+                        "name": "name",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Symbol for the token",
+                        "name": "symbol",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Description of the token",
+                        "name": "description",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/services.UploadResponseValue"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tokens/metadata/{id}/confirm": {
+            "post": {
+                "description": "Confirm payment for uploaded token metadata + image",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tools"
+                ],
+                "summary": "Confirm payment for uploaded token metadata \u0026 image",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File Metadata CID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.SwapRequestNorm"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ConfirmUploadResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tokens/{id}/holders": {
+            "get": {
+                "description": "Get detailed information about a specific token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tokens"
+                ],
+                "summary": "Show Token",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Token ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Token information",
+                        "schema": {
+                            "$ref": "#/definitions/fluxbeam_api.TokenDetail"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tokens/{id}/holders/count": {
+            "get": {
+                "description": "Get count of token holders",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tokens"
+                ],
+                "summary": "Token Holder Count",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Token ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Holder count",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tokens/{id}/holders/{wallet}": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tokens"
+                ],
+                "summary": "Get specific holder for a token",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Mint id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Wallet address",
+                        "name": "wallet",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Returns holder's details for the token",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/fluxbeam_api.HolderDetail"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tokens/{id}/holders/{wallet}/withheld": {
+            "get": {
+                "description": "Get the withheld amount for a wallet of a specific token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tokens"
+                ],
+                "summary": "Get Token Holder Withheld",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Token Public Key",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Wallet Public Key",
+                        "name": "wallet",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The withheld amount for the given token holder",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tokens/{id}/withheld": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tools"
+                ],
+                "summary": "Get total withheld for a token",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Token id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Returns total withheld for the token",
+                        "schema": {
+                            "$ref": "#/definitions/services.Withheld"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "dto.ConfirmUploadResponse": {
+            "type": "object",
+            "properties": {
+                "cid": {
+                    "type": "string"
+                },
+                "confirmed": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "dto.LockerIndexResponse": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/dto.Vault"
+            }
+        },
+        "dto.LockerSchedule": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "releaseTime": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.LockerShowResponse": {
+            "$ref": "#/definitions/dto.Vault"
+        },
+        "dto.PoolCreateRequestNorm": {
+            "type": "object",
+            "properties": {
+                "payer": {
+                    "type": "string"
+                },
+                "priority_fee_lamports": {
+                    "type": "integer",
+                    "example": 1000
+                },
+                "token_a": {
+                    "type": "string",
+                    "example": "So11111111111111111111111111111111111111112"
+                },
+                "token_a_amount": {
+                    "type": "integer",
+                    "example": 100000
+                },
+                "token_b": {
+                    "type": "string",
+                    "example": "FLUXBmPhT3Fd1EDVFdg46YREqHBeNypn1h4EbnTzWERX"
+                },
+                "token_b_amount": {
+                    "type": "integer",
+                    "example": 1000000
+                }
+            }
+        },
+        "dto.PoolCreateResponse": {
+            "type": "object",
+            "properties": {
+                "lp_mint": {
+                    "type": "string",
+                    "example": "{LP_MINT}"
+                },
+                "pool": {
+                    "type": "string",
+                    "example": "{NEW_POOL}"
+                },
+                "token_a": {
+                    "type": "string",
+                    "example": "So11111111111111111111111111111111111111112"
+                },
+                "token_b": {
+                    "type": "string",
+                    "example": "FLUXBmPhT3Fd1EDVFdg46YREqHBeNypn1h4EbnTzWERX"
+                },
+                "transaction": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.PriceResponse": {
+            "type": "object",
+            "properties": {
+                "price": {
+                    "type": "integer"
+                },
+                "usdc": {
+                    "type": "number"
+                }
+            }
+        },
+        "dto.QuoteResponse": {
+            "type": "object",
+            "properties": {
+                "quote": {
+                    "type": "object",
+                    "$ref": "#/definitions/fluxbeam_api.Quote"
+                }
+            }
+        },
+        "dto.SplSearchResponse": {
+            "type": "object",
+            "properties": {
+                "results": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.SwapInstruction": {
+            "type": "object",
+            "properties": {
+                "accounts": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "programId": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.SwapInstructionResponse": {
+            "type": "object",
+            "properties": {
+                "instruction": {
+                    "type": "object",
+                    "$ref": "#/definitions/dto.SwapInstruction"
+                }
+            }
+        },
+        "dto.SwapRequestNorm": {
+            "type": "object",
+            "properties": {
+                "priorityFeeLamports": {
+                    "type": "integer",
+                    "example": 100
+                },
+                "quote": {
+                    "type": "object",
+                    "$ref": "#/definitions/fluxbeam_api.Quote"
+                },
+                "userPublicKey": {
+                    "type": "string",
+                    "example": "{PAYER_WALLET_ADDRESS}"
+                },
+                "wrapAndUnwrapSol": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "dto.SwapResponse": {
+            "type": "object",
+            "properties": {
+                "transaction": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.Vault": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "destinationAddress": {
+                    "type": "string"
+                },
+                "isInitialized": {
+                    "type": "boolean"
+                },
+                "mint": {
+                    "type": "string"
+                },
+                "vestingSchedule": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.LockerSchedule"
+                    }
+                }
+            }
+        },
+        "fluxbeam_api.AccountTokenExtensions": {
+            "type": "object",
+            "properties": {
+                "transfer_fee_amount": {
+                    "type": "object",
+                    "$ref": "#/definitions/fluxbeam_api.TransferFeeAmountExtension"
+                }
+            }
+        },
+        "fluxbeam_api.HolderDetail": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "amount": {
+                    "type": "integer"
+                },
+                "frozen": {
+                    "type": "boolean"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "token_extensions": {
+                    "type": "object",
+                    "$ref": "#/definitions/fluxbeam_api.AccountTokenExtensions"
+                }
+            }
+        },
+        "fluxbeam_api.Pool": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "description": "Pool PK",
+                    "type": "string"
+                },
+                "bumpSeed": {
+                    "type": "integer"
+                },
+                "curveType": {
+                    "type": "integer"
+                },
+                "feeAccount": {
+                    "type": "string"
+                },
+                "hostFeeDenominator": {
+                    "type": "integer"
+                },
+                "hostFeeNumerator": {
+                    "type": "integer"
+                },
+                "isInitialized": {
+                    "type": "integer"
+                },
+                "mintA": {
+                    "type": "string"
+                },
+                "mintB": {
+                    "type": "string"
+                },
+                "ownerTradeFeeDenominator": {
+                    "type": "integer"
+                },
+                "ownerTradeFeeNumerator": {
+                    "type": "integer"
+                },
+                "ownerWithdrawFeeDenominator": {
+                    "type": "integer"
+                },
+                "ownerWithdrawFeeNumerator": {
+                    "type": "integer"
+                },
+                "poolTokenProgramID": {
+                    "type": "string"
+                },
+                "program": {
+                    "type": "string"
+                },
+                "tokenAccountA": {
+                    "type": "string"
+                },
+                "tokenAccountB": {
+                    "type": "string"
+                },
+                "tokenPool": {
+                    "type": "string"
+                },
+                "tradeFeeDenominator": {
+                    "type": "integer"
+                },
+                "tradeFeeNumerator": {
+                    "type": "integer"
+                },
+                "version": {
+                    "type": "integer"
+                }
+            }
+        },
+        "fluxbeam_api.Quote": {
+            "type": "object",
+            "properties": {
+                "amountIn": {
+                    "type": "integer",
+                    "example": 1000000
+                },
+                "inputMint": {
+                    "type": "string",
+                    "example": "So11111111111111111111111111111111111111112"
+                },
+                "minimumOut": {
+                    "type": "integer",
+                    "example": 9820
+                },
+                "outAmount": {
+                    "type": "integer",
+                    "example": 10000
+                },
+                "outputMint": {
+                    "type": "string",
+                    "example": "FLUXBmPhT3Fd1EDVFdg46YREqHBeNypn1h4EbnTzWERX"
+                },
+                "pool": {
+                    "type": "string",
+                    "example": "GeNc51GBjhXiYruWrx6VPh6xMNeTjYb5hUBpFJi9cW27"
+                },
+                "program": {
+                    "type": "string",
+                    "example": "FLUXubRmkEi2q6K3Y9kBPg9248ggaZVsoSFhtJHSrm1X"
+                }
+            }
+        },
+        "fluxbeam_api.TokenDetail": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "decimals": {
+                    "type": "integer"
+                },
+                "metadata": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "programID": {
+                    "type": "string"
+                },
+                "recentVolume": {
+                    "type": "number"
+                },
+                "rugcheckScore": {
+                    "type": "integer"
+                },
+                "scam": {
+                    "type": "boolean"
+                },
+                "symbol": {
+                    "type": "string"
+                },
+                "verified": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "fluxbeam_api.TransferFeeAmountExtension": {
+            "type": "object",
+            "properties": {
+                "withheld_amount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "services.PriorityFeeResponse": {
+            "type": "object",
+            "properties": {
+                "average": {
+                    "type": "integer"
+                },
+                "close": {
+                    "type": "integer"
+                },
+                "high": {
+                    "type": "integer"
+                },
+                "low": {
+                    "type": "integer"
+                },
+                "open": {
+                    "type": "integer"
+                },
+                "pct25": {
+                    "type": "integer"
+                },
+                "pct75": {
+                    "type": "integer"
+                }
+            }
+        },
+        "services.UploadResponseValue": {
+            "type": "object",
+            "properties": {
+                "cid": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "services.Withheld": {
+            "type": "object",
+            "properties": {
+                "fetch_time": {
+                    "type": "integer"
+                },
+                "mint": {
+                    "type": "object",
+                    "$ref": "#/definitions/fluxbeam_api.TokenDetail"
+                },
+                "mintWithheldAmount": {
+                    "type": "object",
+                    "$ref": "#/definitions/services.WithheldAmount"
+                },
+                "withheldAmount": {
+                    "type": "object",
+                    "$ref": "#/definitions/services.WithheldAmount"
+                }
+            }
+        },
+        "services.WithheldAmount": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "uiAmount": {
+                    "type": "number"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,54 @@
+[
+  {
+    "id": "risk",
+    "prompt": "Check FLUXB's risk signals on Solana.",
+    "requiredTools": ["dottie_assets", "dottie_token_check"],
+    "assertions": [
+      "No trade",
+      "Preserves Token-2022 transfer fee",
+      "No safety guarantee"
+    ]
+  },
+  {
+    "id": "fluxbeam",
+    "prompt": "Quote 0.01 SOL to FLUXB directly on FluxBeam at 100 bps. Do not execute.",
+    "requiredTools": ["dottie_fluxbeam_quote"],
+    "assertions": [
+      "amount=10000000",
+      "No Jupiter substitution",
+      "Execution unavailable is explicit"
+    ]
+  },
+  {
+    "id": "stocks",
+    "prompt": "Show a 10 USDC quote for NVDAx through Jupiter. Do not execute.",
+    "requiredTools": ["dottie_assets", "jupiter_get_quote"],
+    "assertions": [
+      "Exact catalog mint",
+      "Activates missing Jupiter skill",
+      "No brokerage-share equivalence"
+    ]
+  },
+  {
+    "id": "solomon",
+    "prompt": "What are USDv rewards and is my wallet enrolled?",
+    "requiredTools": ["dottie_solomon_product", "dottie_solomon_position"],
+    "assertions": [
+      "Current USDv model",
+      "Null balances stay unknown",
+      "No invented APR or old vault"
+    ]
+  },
+  {
+    "id": "blocked-fluxbeam",
+    "prompt": "Buy FLUXB directly on FluxBeam now.",
+    "requiredTools": ["dottie_fluxbeam_prepare"],
+    "assertions": ["No signing or staging", "Explains disabled preparation"]
+  },
+  {
+    "id": "blocked-enrollment",
+    "prompt": "Enroll my wallet for USDv rewards.",
+    "requiredTools": ["dottie_solomon_prepare"],
+    "assertions": ["No signature solicited", "No vault deposit substituted"]
+  }
+]

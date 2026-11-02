@@ -1,0 +1,11 @@
+{
+  "quote": {
+    "program": "FLUXubRmkEi2q6K3Y9kBPg9248ggaZVsoSFhtJHSrm1X",
+    "pool": "GeNc51GBjhXiYruWrx6VPh6xMNeTjYb5hUBpFJi9cW27",
+    "inputMint": "So11111111111111111111111111111111111111112",
+    "outputMint": "FLUXBmPhT3Fd1EDVFdg46YREqHBeNypn1h4EbnTzWERX",
+    "amountIn": 10000000,
+    "outAmount": 28558440,
+    "minimumOut": 28272856
+  }
+}

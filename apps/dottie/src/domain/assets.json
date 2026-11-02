@@ -1,0 +1,62 @@
+[
+  {
+    "symbol": "SOL",
+    "name": "Wrapped SOL (swap mint)",
+    "mint": "So11111111111111111111111111111111111111112",
+    "decimals": 9,
+    "issuer": "Solana native asset",
+    "source": "https://api.fluxbeam.xyz/swagger/doc.json",
+    "actions": [
+      "core_swap",
+      "fluxbeam_quote"
+    ]
+  },
+  {
+    "symbol": "USDC",
+    "name": "USD Coin",
+    "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "decimals": 6,
+    "issuer": "Circle",
+    "source": "https://developers.circle.com/stablecoins/usdc-contract-addresses",
+    "actions": [
+      "core_swap"
+    ]
+  },
+  {
+    "symbol": "FLUXB",
+    "name": "FluxBot",
+    "mint": "FLUXBmPhT3Fd1EDVFdg46YREqHBeNypn1h4EbnTzWERX",
+    "decimals": 5,
+    "issuer": "FluxBot",
+    "source": "https://api.fluxbeam.xyz/swagger/doc.json",
+    "actions": [
+      "risk_check",
+      "fluxbeam_quote"
+    ],
+    "note": "Token-2022 transfer fee; quoted output is not a verified net wallet receipt."
+  },
+  {
+    "symbol": "USDv",
+    "name": "Solomon USDv",
+    "mint": "USDvUSpnhCr9yBgj3UyVrD239HRUv4RsHwH2FxsWuMk",
+    "decimals": 6,
+    "issuer": "Solomon",
+    "source": "https://app.solomonlabs.org/",
+    "actions": [
+      "product_info",
+      "wallet_status"
+    ]
+  },
+  {
+    "symbol": "NVDAx",
+    "name": "NVIDIA xStock",
+    "mint": "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh",
+    "decimals": 8,
+    "issuer": "Backed / xStocks",
+    "source": "https://github.com/trustwallet/assets/blob/master/blockchains/solana/assets/Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh/info.json",
+    "actions": [
+      "core_quote"
+    ],
+    "note": "Identity corroborated by Trust Wallet metadata and FluxBeam verified listing; issuer page inaccessible in verification. Live route, issuer terms and token scaling still require rehearsal. Do not equate raw balance to underlying shares."
+  }
+]

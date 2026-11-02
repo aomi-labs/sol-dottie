@@ -1,0 +1,4 @@
+[app]
+name = "dottie"
+display_name = "Sol Dottie"
+public = true

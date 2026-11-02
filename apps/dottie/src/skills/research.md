@@ -1,0 +1,1 @@
+Call dottie_token_check with the exact mint. Resolve curated assets with dottie_assets. Explain the most relevant returned risk signals and missing data. A RugCheck score is not a safety guarantee. fetched_at is our retrieval time; detectedAt is token detection, not report generation. Preserve transfer-fee and authority findings. Research alone never authorizes a trade.

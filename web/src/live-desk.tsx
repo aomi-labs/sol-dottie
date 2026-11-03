@@ -1,19 +1,31 @@
-import { StrictMode } from "react";
+import { StrictMode, useEffect, useRef, useState, type RefObject } from "react";
+import { createPortal } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { AomiWidget, type AomiRoutingConfig } from "@aomi-labs/widget";
 import "@aomi-labs/widget/styles.css";
-import { markScenario, showModal, type ScenarioKey } from "./mock-desk";
+import { showModal } from "./mock-desk";
 
-// The playbook buttons put a starter prompt in the composer. They never send:
+const WELCOME_TITLE = "Hi, I’m Dottie. What should we check?";
+
+// The suggestion chips put a starter prompt in the composer. They never send:
 // the visitor reads it, finishes it and presses send. They stay within what the
 // Rust app in apps/dottie can answer.
-const PROMPTS: Record<ScenarioKey, string> = {
-  check: "Check this token with RugCheck before I buy: ",
-  trade: "Quote a FluxBeam swap of 0.01 SOL into FLUXB.",
-  earn: "What is Solomon USDv, and what does my Solomon position look like?",
-  stocks:
-    "Show me NVIDIA xStock (NVDAx) from your asset list and a Jupiter quote for 0.01 SOL into it.",
-};
+const SUGGESTIONS = [
+  { label: "Check a token", prompt: "Check this token with RugCheck before I buy: " },
+  {
+    label: "Quote 0.01 SOL → FLUXB",
+    prompt: "Quote a FluxBeam swap of 0.01 SOL into FLUXB.",
+  },
+  {
+    label: "Solomon USDv",
+    prompt: "What is Solomon USDv, and what does my Solomon position look like?",
+  },
+  {
+    label: "NVIDIA xStock",
+    prompt:
+      "Show me NVIDIA xStock (NVDAx) from your asset list and a Jupiter quote for 0.01 SOL into it.",
+  },
+];
 
 export type LiveDeskOptions = {
   applicationId: string;
@@ -26,13 +38,7 @@ export type LiveDeskOptions = {
 const q = <T extends Element = HTMLElement>(selector: string) =>
   document.querySelector<T>(selector);
 
-function el(html: string): HTMLElement {
-  const t = document.createElement("template");
-  t.innerHTML = html.trim();
-  return t.content.firstElementChild as HTMLElement;
-}
-
-/** Replace the concept desk's sample data with the live Aomi chat. */
+/** Replace the concept desk with the live Aomi widget, branded for Dottie. */
 export function mountLiveDesk({
   applicationId,
   baseUrl,
@@ -42,58 +48,19 @@ export function mountLiveDesk({
 }: LiveDeskOptions) {
   const shell = q("#desk-shell");
   if (!shell) return;
-  shell.classList.add("live");
 
   const label = q(".demo-label");
   if (label)
     label.innerHTML =
       "<i></i> Live on Solana mainnet · Real quotes · Your wallet signs every transaction";
 
-  // Middle column: the widget takes the place of the canned messages and form.
-  q(".chat-top small")?.remove();
-  const signingBtn = q("#wallet-btn");
-  if (signingBtn) {
-    signingBtn.textContent = "How signing works ↗";
-    signingBtn.addEventListener("click", () =>
-      showModal(
-        "Your wallet makes the final call.",
-        "Dottie prepares and simulates each move, then shows you the review. Nothing leaves your wallet until you approve it there, and every confirmed move links to the Solana explorer.",
-      ),
-    );
-  }
-  const tgSub = q(".tg-header small");
-  if (tgSub) tgSub.textContent = "bot · same Dottie, live";
-  const mount = el('<div class="live-chat"></div>');
-  q("#messages")?.replaceWith(mount);
-  q("#composer")?.remove();
-
-  // Left column: no demo wallet; the widget header owns sign-in.
-  q(".new-chat")?.remove();
-  q(".sidebar-bottom")?.replaceWith(
-    el(
-      `<div class="sidebar-bottom live-hint"><div class="avatar-dot">✳</div><span><b>Your wallet</b><small>Sign in at the top of the chat</small></span></div>`,
-    ),
-  );
-  markScenario(null);
-
-  // Right column: swap the sample portfolio for how a move works.
-  document
-    .querySelectorAll(
-      ".portfolio .balance-label, .portfolio .balance, .portfolio .holding",
-    )
-    .forEach((n) => n.remove());
-  const corner = q(".portfolio h3");
-  if (corner) {
-    corner.textContent = "How a move works.";
-    corner.after(
-      el(`<ol class="live-steps">
-        <li><b>Ask</b><small>Paste a token or pick a playbook card.</small></li>
-        <li><b>Review</b><small>Risk signals, route, fees and minimum out.</small></li>
-        <li><b>Sign</b><small>Approve in your own wallet, or don’t.</small></li>
-        <li><b>Done</b><small>A confirmed signature you can open.</small></li>
-      </ol>`),
-    );
-  }
+  // The widget owns the whole desk: its own sidebar, chat and sign-in. The
+  // element keeps its id so the Web app / Telegram toggle still finds it.
+  const frame = document.createElement("section");
+  frame.id = "desk-shell";
+  frame.className = "dottie-app";
+  frame.setAttribute("aria-label", "Sol Dottie chat");
+  shell.replaceWith(frame);
 
   // Telegram section: point at the real bot when there is one.
   const channelNote = q(".channel-copy small");
@@ -107,14 +74,6 @@ export function mountLiveDesk({
       tgBtn.innerHTML =
         '<svg><use href="#tg"/></svg> Open in Telegram <span>↗</span>';
   }
-
-  document.addEventListener("click", (e) => {
-    const target = (e.target as Element).closest<HTMLElement>("button");
-    const key = target?.dataset.scenario as ScenarioKey | undefined;
-    if (!key) return;
-    markScenario(key);
-    fillComposer(mount, PROMPTS[key]);
-  });
 
   const numericId = Number(applicationId);
   const routing: AomiRoutingConfig =
@@ -132,8 +91,32 @@ export function mountLiveDesk({
 
   if (defaultModel) presetModel(baseUrl, applicationId, defaultModel);
 
-  createRoot(mount).render(
+  createRoot(frame).render(
     <StrictMode>
+      <DottieDesk
+        applicationId={applicationId}
+        baseUrl={baseUrl}
+        routing={routing}
+        showModelPicker={showModelPicker}
+      />
+    </StrictMode>,
+  );
+}
+
+function DottieDesk({
+  applicationId,
+  baseUrl,
+  routing,
+  showModelPicker,
+}: {
+  applicationId: string;
+  baseUrl?: string;
+  routing: AomiRoutingConfig;
+  showModelPicker: boolean;
+}) {
+  const frameRef = useRef<HTMLDivElement>(null);
+  return (
+    <div className="dottie-frame" ref={frameRef}>
       <AomiWidget
         applicationId={applicationId}
         baseUrl={baseUrl}
@@ -156,15 +139,93 @@ export function mountLiveDesk({
             ],
           },
         }}
-        showSidebar={false}
-        walletPosition="header"
+        showHeader
+        showSidebar
+        walletPosition="footer"
         features={{ theme: false, library: false }}
         controlBarProps={{ hideModel: !showModelPicker, hideAppSecrets: true }}
         height="100%"
         width="100%"
-        className="dottie-widget"
+        // Match the frame's inner radius so the corners read as one edge.
+        style={{ borderRadius: 10, boxShadow: "none" }}
       />
-    </StrictMode>,
+      <DottieBrand frameRef={frameRef} />
+    </div>
+  );
+}
+
+/** Static chip standing in for the network selector, which hides itself when only one chain is configured. */
+function ChainPill() {
+  return (
+    <span className="dottie-chain" title="Dottie works on Solana mainnet">
+      <i aria-hidden="true" />
+      Solana
+    </span>
+  );
+}
+
+const sameList = (a: HTMLElement[], b: HTMLElement[]) =>
+  a.length === b.length && a.every((el, i) => el === b[i]);
+
+/**
+ * Dottie's welcome title, suggestion chips and chain pill inside the widget.
+ * AomiWidget 4.0.2 has no props for these, so this patches its DOM the way
+ * Hoodit does. Logos and placeholders are CSS in live.css.
+ */
+function DottieBrand({ frameRef }: { frameRef: RefObject<HTMLElement | null> }) {
+  const [welcome, setWelcome] = useState<HTMLElement | null>(null);
+  const [bars, setBars] = useState<HTMLElement[]>([]);
+
+  useEffect(() => {
+    const frame = frameRef.current;
+    if (!frame) return;
+    const sync = () => {
+      const root = frame.querySelector<HTMLElement>(".aui-thread-welcome-root");
+      const title = root?.querySelector(".aui-thread-welcome-title");
+      if (title && title.textContent !== WELCOME_TITLE)
+        title.textContent = WELCOME_TITLE;
+      setWelcome(root);
+      const found = [
+        ...frame.querySelectorAll<HTMLElement>(".aui-composer-action-scroll"),
+      ];
+      setBars((current) => (sameList(current, found) ? current : found));
+    };
+    sync();
+    const observer = new MutationObserver(sync);
+    observer.observe(frame, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, [frameRef]);
+
+  const pills = bars.map((bar, i) =>
+    createPortal(<ChainPill />, bar, `chain-${i}`),
+  );
+  const host = welcome?.querySelector(".aui-thread-welcome-suggestions");
+  if (!welcome || !host) return <>{pills}</>;
+  return (
+    <>
+      {pills}
+      {createPortal(
+        <div
+          className="dottie-suggestions"
+          role="group"
+          aria-label="Things to ask Dottie"
+        >
+          {SUGGESTIONS.map((item) => (
+            <button
+              key={item.label}
+              type="button"
+              className="dottie-suggestion"
+              aria-label={item.prompt}
+              onClick={() => fillComposer(welcome, item.prompt)}
+            >
+              <i aria-hidden="true" />
+              {item.label}
+            </button>
+          ))}
+        </div>,
+        host,
+      )}
+    </>
   );
 }
 

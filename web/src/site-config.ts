@@ -16,3 +16,6 @@ export const DOTTIE_TELEGRAM_URL = env.VITE_DOTTIE_TELEGRAM_URL?.trim() || "";
 
 /** Local stacks may lack the default model's supplier, so they can show the picker. */
 export const DOTTIE_SHOW_MODEL_PICKER = env.VITE_DOTTIE_SHOW_MODEL === "1";
+
+/** Model preset for visitors who have not picked one. Empty keeps the widget default. */
+export const DOTTIE_DEFAULT_MODEL = env.VITE_DOTTIE_DEFAULT_MODEL?.trim() || "";

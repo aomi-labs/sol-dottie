@@ -20,6 +20,7 @@ export type LiveDeskOptions = {
   baseUrl?: string;
   telegramUrl: string;
   showModelPicker: boolean;
+  defaultModel: string;
 };
 
 const q = <T extends Element = HTMLElement>(selector: string) =>
@@ -37,6 +38,7 @@ export function mountLiveDesk({
   baseUrl,
   telegramUrl,
   showModelPicker,
+  defaultModel,
 }: LiveDeskOptions) {
   const shell = q("#desk-shell");
   if (!shell) return;
@@ -128,6 +130,8 @@ export function mountLiveDesk({
         }
       : { targets: [{ mode: "auto" }] };
 
+  if (defaultModel) presetModel(baseUrl, applicationId, defaultModel);
+
   createRoot(mount).render(
     <StrictMode>
       <AomiWidget
@@ -177,4 +181,29 @@ function fillComposer(root: HTMLElement, text: string) {
   }
   void navigator.clipboard?.writeText(text).catch(() => undefined);
   showModal("Here’s a starter.", `Paste this into the chat: “${text.trim()}”`);
+}
+
+/** Preset the widget's model for visitors who have not picked one. A local
+ * stack sets this when the default model's supplier has no credit. The key
+ * mirrors the widget's own scoped preference storage. */
+function presetModel(
+  baseUrl: string | undefined,
+  applicationId: string,
+  model: string,
+) {
+  const origin = (baseUrl ?? "https://chat.aomi.dev").replace(/\/+$/, "");
+  const key = [
+    "aomi",
+    "v2",
+    encodeURIComponent(origin),
+    encodeURIComponent(applicationId),
+    "modelSelection",
+  ].join(":");
+  try {
+    const saved = JSON.parse(localStorage.getItem(key) ?? "null");
+    if (saved?.mode === "manual") return;
+    localStorage.setItem(key, JSON.stringify({ mode: "manual", model }));
+  } catch {
+    // Storage can be denied; the widget then uses its own default.
+  }
 }

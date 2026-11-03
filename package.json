@@ -2,9 +2,12 @@
   "name": "sol-dottie-monorepo",
   "private": true,
   "scripts": {
-    "dev": "pnpm -C web dev",
-    "build:web": "pnpm -C web build",
+    "dev": "pnpm --filter web dev",
+    "build:web": "pnpm --filter web build",
+    "typecheck": "pnpm -r typecheck",
     "test:app": "cargo test",
-    "test:trace": "node --test tests/*.test.mjs"
-  }
+    "test:trace": "node --test tests/*.test.mjs",
+    "tour": "pnpm --filter client tour"
+  },
+  "packageManager": "pnpm@10.28.0"
 }

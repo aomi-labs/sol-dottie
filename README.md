@@ -12,16 +12,19 @@ and the Rust Aomi app behind it.
 - `.aomi/config.json`: the repository import for Aomi Build.
 - `docs/`: integration evidence, validation notes, release gates and the
   workshop script.
+- `client/`: Node scripts that chat with a running Dottie, the same shape as
+  the `aomi-labs/playground-example` template. `ask` sends one prompt and
+  `tour` runs a scripted check of every tool.
 - `tests/evals/`, `scripts/check-trace.mjs`: hosted conversation cases and the
   checker for normalized host traces.
 
-Node 22.12+ and Rust 1.93.0 are required. `web/pnpm-lock.yaml` and `Cargo.lock`
-pin dependencies.
+Node 22.12+ and Rust 1.93.0 are required. `web/` and `client/` form one pnpm
+workspace. The root `pnpm-lock.yaml` and `Cargo.lock` pin dependencies.
 
 ## Run the site
 
 ```sh
-pnpm -C web install
+pnpm install
 pnpm dev            # http://localhost:3004
 ```
 
@@ -51,8 +54,8 @@ Defaults live in `web/src/site-config.ts`. A Vite env var in `web/.env.local`
 
 | Variable | Meaning |
 | --- | --- |
-| `VITE_DOTTIE_APPLICATION_ID` | Hosted Dottie app. Empty means concept mode. `VITE_DOTTIE_APP_ID` is accepted as a fallback. |
-| `VITE_AOMI_API_URL` | Aomi backend. Empty means `https://chat.aomi.dev`. |
+| `VITE_DOTTIE_APPLICATION_ID` | Hosted Dottie app. Empty means concept mode. `VITE_DOTTIE_APP_ID` and `VITE_AOMI_APPLICATION_ID` are accepted as fallbacks. |
+| `VITE_AOMI_API_URL` | Aomi backend. Empty means `https://chat.aomi.dev`. `VITE_AOMI_BASE_URL` is accepted as a fallback. |
 | `VITE_DOTTIE_TELEGRAM_URL` | Telegram bot link for the "Meet me on Telegram" buttons. |
 
 ### Site files
@@ -104,6 +107,22 @@ The HTTP runtime uses fixed provider origins, a 12-second timeout, one request
 per second per provider per process, bounded cache and response sizes, a 429
 cooldown and a five-second queue limit. Quotes are never cached. Several app
 instances need an operator-level rate-limit plan before a large workshop.
+
+## Chat from Node
+
+`client/` reaches Dottie in direct mode with a guest sign-in:
+
+```sh
+cp client/.env.example client/.env       # set AOMI_APPLICATION_ID and AOMI_BASE_URL
+pnpm --filter client ask "Which build are you?"
+pnpm tour
+```
+
+`tour` runs three sessions: the build and a RugCheck report on USDC, a FluxBeam
+quote for 0.01 SOL into FLUXB, and Solomon USDv with no wallet connected. It
+prints each tool call and the final reply. Bump `BUILD` in
+`apps/dottie/src/lib.rs` on every change so `dottie_about` shows which build
+answered.
 
 ## Run a full local stack
 

@@ -1,0 +1,6 @@
+packages:
+  - web
+  - client
+
+onlyBuiltDependencies:
+  - esbuild

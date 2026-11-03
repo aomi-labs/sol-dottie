@@ -5,12 +5,15 @@ pub mod runtime;
 pub mod tools;
 pub mod view;
 
+/// Bump this when you ship a change so `dottie_about` shows which build is running.
+pub const BUILD: &str = "v1";
+
 dyn_aomi_app!(
     app = runtime::DottieApp,
     name = "dottie",
     version = "0.1.0",
     preamble = include_str!("preamble.md"),
-    tools = [tools::Assets, tools::TokenCheck, tools::FluxbeamQuote, tools::FluxbeamPrepare,
+    tools = [tools::About, tools::Assets, tools::TokenCheck, tools::FluxbeamQuote, tools::FluxbeamPrepare,
              tools::SolomonProduct, tools::SolomonPosition, tools::SolomonPrepare],
     namespaces = ["aomi-core", "svm-core"],
     skills = [

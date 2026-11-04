@@ -1,5 +1,5 @@
 {
-  "name": "web",
+  "name": "sol-dottie",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -7,20 +7,27 @@
     "dev": "vite --port 3004",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --port 3004",
-    "deploy": "pnpm build && wrangler deploy",
-    "typecheck": "tsc --noEmit"
+    "deploy": "pnpm build && wrangler deploy"
   },
   "dependencies": {
     "@aomi-labs/widget": "4.0.2",
+    "qrcode": "1.5.4",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
+    "@types/qrcode": "1.5.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^4.7.0",
     "typescript": "^5",
     "vite": "^7.2.2",
     "wrangler": "4.150.0"
+  },
+  "packageManager": "pnpm@10.28.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   }
 }

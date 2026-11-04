@@ -100,7 +100,7 @@ export function DottieLanding() {
             <a href="#demo">Demo</a>
             <a href="#edge">The edge</a>
             <a href="#features">Features</a>
-            <a href="#how">How it works</a>
+            <a href="https://claude.ai/artifact/EKjC3hdAEE3PmXY8Jkif7v" target="_blank" rel="noopener noreferrer">How it works ↗</a>
             <a href="#join">Join</a>
           </nav>
           <div className="nav-cta">

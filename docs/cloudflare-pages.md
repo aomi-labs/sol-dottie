@@ -20,7 +20,10 @@ branch (`main`). Authenticate Wrangler with the API token or its local OAuth log
 
 `web/.env.production` contains public values only. The current rehearsal uses
 `https://chat-staging.aomi.dev`, app `2937818`, and `https://t.me/DottieSolBot`,
-matching the working Telegram registration. Publishing this frontend does not
+matching the working Telegram registration. The hosted backend source is
+`aomi-labs/sol-dottie-playground`, Project `1672`, application `2937818`; its
+Aomi Build deployment runs separately from this website repository.
+Publishing this frontend does not
 promote the backend, change a wallet policy, or prove a live Solana trade.
 
 Bind `dottie.aomi.dev` to the Pages project and point its proxied CNAME to

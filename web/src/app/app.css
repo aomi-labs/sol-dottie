@@ -1,0 +1,39 @@
+/* The /app page: Dottie's chat, full screen, in the site's palette. The widget's
+   own tokens live in live.css (scoped to .dottie-frame). */
+/* same star felt as the landing page */
+.dottie-app { min-height: 100dvh; display: flex; flex-direction: column; background: var(--sky) url("/art/sky.webp") center top / 1440px auto repeat; color: var(--ink); }
+.app-bar { width: min(1440px, calc(100% - 48px)); margin: 0 auto; min-height: 76px; display: flex; align-items: center; gap: 22px; border-bottom: 1px solid rgba(29,14,46,.3); }
+.app-bar .brand { display: flex; align-items: center; gap: 10px; font-family: var(--display); font-size: 24px; }
+.app-bar .brand-mark { width: 42px; height: 42px; }
+.app-chain { display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 999px; background: var(--ink); color: var(--paper); font: 600 9px var(--mono); letter-spacing: .1em; }
+.app-chain i { width: 7px; height: 7px; border-radius: 50%; background: var(--mint); }
+.app-tg { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; font: 700 13px var(--body); }
+.app-tg .tg-icon { width: 24px; height: 24px; }
+.app-tg + .app-back { margin-left: 0; }
+.app-back { margin-left: auto; font: 600 11px var(--mono); text-transform: uppercase; letter-spacing: .08em; border-bottom: 2px solid var(--peach-deep); padding-bottom: 2px; }
+.app-frame { width: min(1440px, calc(100% - 48px)); height: max(540px, calc(100dvh - 160px)); margin: 18px auto 14px; border-radius: 16px; box-shadow: var(--shadow); overflow: hidden; background: var(--paper3); font-family: var(--body); }
+.app-frame .dottie-frame { height: 100%; }
+.app-foot { width: min(1440px, calc(100% - 48px)); margin: 0 auto; padding: 8px 0 16px; display: flex; align-items: center; justify-content: space-between; gap: 16px; color: var(--ink-soft); font: 600 10px/1.5 var(--mono); letter-spacing: .04em; }
+.app-foot b { color: var(--ink); }
+
+.widget-loading { height: 100%; display: grid; grid-template-columns: 240px 1fr; background: var(--paper3); }
+.widget-loading-side { padding: 22px 16px; display: grid; align-content: start; gap: 12px; background: var(--paper2); border-right: 1px solid var(--line); }
+.widget-loading-side i { display: block; height: 34px; border-radius: 10px; background: rgba(29,14,46,.06); }
+.widget-loading-main { position: relative; display: grid; place-content: center; justify-items: center; gap: 14px; padding: 40px 24px 110px; color: var(--ink-soft); font: 600 14px var(--body); }
+.widget-loading-mark { display: grid; place-items: center; width: 84px; height: 84px; border-radius: 50%; background: var(--lilac); animation: dottie-bob 1.8s ease-in-out infinite; }
+.widget-loading-mark img { width: 64px; height: 64px; object-fit: contain; }
+.widget-loading p { margin: 0; max-width: 420px; text-align: center; }
+.widget-loading-composer { position: absolute; left: 24px; right: 24px; bottom: 24px; height: 56px; border-radius: 16px; border: 1px solid var(--line); background: #fff; }
+@keyframes dottie-bob { 50% { transform: translateY(-6px); } }
+
+.dottie-toast { position: fixed; left: 50%; bottom: 28px; z-index: 10000; transform: translateX(-50%); max-width: min(90vw, 520px); padding: 12px 18px; border-radius: 14px; background: var(--ink); color: var(--paper); box-shadow: var(--shadow); font: 500 13.5px/1.4 var(--body); }
+
+@media (max-width: 700px) {
+  .app-bar, .app-frame, .app-foot { width: calc(100% - 24px); }
+  .app-bar { padding: 10px 0; flex-wrap: wrap; gap: 12px; min-height: 0; }
+  .app-chain { display: none; }
+  .app-frame { height: calc(100dvh - 150px); margin-top: 12px; }
+  .app-foot { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .widget-loading { grid-template-columns: 1fr; }
+  .widget-loading-side { display: none; }
+}

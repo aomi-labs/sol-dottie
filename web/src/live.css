@@ -13,16 +13,16 @@
 
   --background: var(--paper);
   --foreground: var(--ink);
-  --card: #fdf8ff;
+  --card: #fdfbff;
   --card-foreground: var(--ink);
-  --popover: #fdf8ff;
+  --popover: #fdfbff;
   --popover-foreground: var(--ink);
   --primary: var(--purple);
   --primary-foreground: #fff;
   --secondary: var(--paper2);
   --secondary-foreground: var(--ink);
   --muted: var(--paper2);
-  --muted-foreground: #735680;
+  --muted-foreground: #5b5775;
   --accent: var(--mint);
   --accent-foreground: var(--ink);
   --destructive: #c8434f;
@@ -33,29 +33,29 @@
   --sidebar-foreground: var(--ink);
   --sidebar-primary: var(--purple);
   --sidebar-primary-foreground: #fff;
-  --sidebar-accent: #ead2f5;
+  --sidebar-accent: #e4ddee;
   --sidebar-accent-foreground: var(--ink);
   --sidebar-border: rgba(49, 17, 62, 0.2);
   --sidebar-ring: var(--purple);
 
   --aomi-bg: var(--paper);
-  --aomi-surface: #fdf8ff;
+  --aomi-surface: #fdfbff;
   --aomi-surface-2: var(--paper2);
   --aomi-raised: #fff;
   --aomi-border: rgba(49, 17, 62, 0.24);
   --aomi-fg: var(--ink);
-  --aomi-muted: #735680;
+  --aomi-muted: #5b5775;
   --aomi-accent: var(--purple);
   --aomi-accent-strong: var(--plum);
-  --aomi-accent-subtle: #f0dff8;
+  --aomi-accent-subtle: #ebe5f3;
   /* Derived at :root from the widget's blue accent, so re-derive them here. */
   --aomi-ring: var(--aomi-accent);
   --aomi-accent-tint: color-mix(in srgb, var(--aomi-accent) 10%, transparent);
   --aomi-accent-outline: color-mix(in srgb, var(--aomi-accent) 45%, transparent);
   --aomi-on-accent: #fff;
-  --aomi-hover: #ead2f5;
-  --aomi-pink: #e4affb;
-  --aomi-success: #1f7a44;
+  --aomi-hover: #e4ddee;
+  --aomi-pink: var(--peach);
+  --aomi-success: var(--sage-deep);
   --aomi-warning: var(--orange);
   --aomi-danger: #c8434f;
   --aomi-danger-strong: #a83542;
@@ -72,9 +72,9 @@
 .dottie-frame {
   width: 100%;
   height: clamp(560px, calc(100svh - 140px), 780px);
-  border: 2px solid var(--ink);
-  border-radius: 12px;
-  box-shadow: 6px 6px 0 var(--ink);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
   overflow: hidden;
   background: var(--paper);
   font-family: var(--body);
@@ -107,7 +107,7 @@
   content: "";
   width: 30px;
   height: 30px;
-  background: url("/dottie.svg") center / contain no-repeat;
+  background: url("/art/dottie.png") center / contain no-repeat;
 }
 .dottie-app .dottie-frame .aomi-sidebar-header-logo::after {
   content: "Sol Dottie";
@@ -129,8 +129,8 @@
   content: "";
   width: 96px;
   height: 96px;
-  background: url("/dottie.svg") center / contain no-repeat;
-  filter: drop-shadow(4px 4px 0 var(--ink));
+  background: url("/art/dottie.png") center / contain no-repeat;
+  filter: drop-shadow(0 10px 14px rgba(5, 20, 19, 0.3));
 }
 .dottie-app .dottie-frame .aui-thread-welcome-title {
   font-family: var(--display);
@@ -138,10 +138,8 @@
   font-weight: 400;
   letter-spacing: 0.01em;
   line-height: 1.1;
-  color: #fff;
-  -webkit-text-stroke: 0.03em var(--ink);
-  paint-order: stroke fill;
-  text-shadow: 0.07em 0.07em 0 var(--ink);
+  color: var(--ink);
+  text-shadow: 0 0.05em 0.02em rgba(29, 35, 64, 0.16);
   text-align: center;
 }
 .dottie-app .dottie-frame .aui-assistant-message-row > svg {
@@ -153,7 +151,7 @@
   width: 30px;
   height: 30px;
   margin-top: 2px;
-  background: url("/dottie.svg") center / contain no-repeat;
+  background: url("/art/dottie.png") center / contain no-repeat;
 }
 
 /* The placeholder is a decorative span drawn behind the empty textbox. */
@@ -189,12 +187,12 @@
   align-items: center;
   gap: 8px;
   padding: 9px 15px;
-  border: 2px solid var(--ink);
+  border: 1px solid var(--line);
   border-radius: 999px;
-  background: #fdf8ff;
+  background: #fff;
   color: var(--ink);
   font: 600 13px var(--display-sm);
-  box-shadow: 3px 3px 0 var(--ink);
+  box-shadow: var(--shadow-sm);
   cursor: pointer;
   transition:
     transform 0.12s,
@@ -202,29 +200,30 @@
     background 0.12s;
 }
 .dottie-app .dottie-frame .dottie-suggestion:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0 var(--ink);
-  background: var(--mint);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+  background: var(--sage);
+  color: #fff;
 }
 .dottie-app .dottie-frame .dottie-suggestion i {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--purple);
-  border: 1.5px solid var(--ink);
+  background: var(--sage);
+  border: 0;
 }
 
 /* ---------- Composer ---------- */
 .dottie-app .dottie-frame .aui-composer-send,
 .dottie-app .dottie-frame .aui-composer-cancel {
-  background: var(--purple);
+  background: var(--sage);
   color: #fff;
-  border: 2px solid var(--ink);
-  box-shadow: 2px 2px 0 var(--ink);
+  border: 0;
+  box-shadow: var(--shadow-sm);
 }
 .dottie-app .dottie-frame .aui-composer-send:hover,
 .dottie-app .dottie-frame .aui-composer-cancel:hover {
-  background: var(--plum);
+  background: var(--sage-deep);
   opacity: 1;
 }
 .dottie-app .dottie-frame .aui-composer-send:disabled {
@@ -242,10 +241,10 @@
   gap: 7px;
   margin-right: 6px;
   padding: 5px 11px;
-  border: 2px solid var(--ink);
+  border: 0;
   border-radius: 999px;
-  background: var(--mint);
-  color: var(--ink);
+  background: var(--sage);
+  color: #fff;
   font: 700 11px var(--mono);
   letter-spacing: 0.04em;
   white-space: nowrap;
@@ -255,13 +254,13 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--purple);
+  background: var(--peach);
 }
 
 @media (max-width: 700px) {
   .dottie-app .dottie-frame {
     height: max(520px, calc(100svh - 160px));
-    box-shadow: 4px 4px 0 var(--ink);
+    box-shadow: var(--shadow-sm);
   }
   .dottie-app .dottie-frame .dottie-suggestion:nth-child(n + 4) {
     display: none;

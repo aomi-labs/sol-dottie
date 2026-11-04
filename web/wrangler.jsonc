@@ -1,8 +1,11 @@
+// Static site on Cloudflare Workers: `pnpm build` writes dist/, `pnpm deploy` uploads it.
 {
   "name": "sol-dottie",
   "compatibility_date": "2026-11-02",
   "assets": {
     "directory": "./dist",
+    // /app serves dist/app/index.html.
+    "html_handling": "auto-trailing-slash",
     "not_found_handling": "404-page"
   }
 }

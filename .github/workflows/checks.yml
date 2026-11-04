@@ -35,3 +35,38 @@ jobs:
         with:
           node-version: 24
       - run: node --test tests/*.test.mjs
+  deploy-pages:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [app, web, trace]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    concurrency:
+      group: pages-production
+      cancel-in-progress: false
+    environment:
+      name: production
+      url: https://dottie.aomi.dev
+    env:
+      NODE_OPTIONS: --max-old-space-size=6144
+      CLOUDFLARE_ACCOUNT_ID: 210e3092c7936592ca2078b5e26f7ea2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build and deploy Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [[ -z "$CLOUDFLARE_API_TOKEN" ]]; then
+            echo '::error::Set the CLOUDFLARE_API_TOKEN repository or production environment secret (Cloudflare Pages Edit on the Dottie account).'
+            exit 1
+          fi
+          bash scripts/deploy-pages.sh
+      - name: Verify public site
+        run: |
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors https://dottie.aomi.dev/ --output /dev/null
+          curl --fail --silent --show-error --location --retry 5 --retry-all-errors https://dottie.aomi.dev/app/ --output /dev/null

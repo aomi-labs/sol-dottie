@@ -158,7 +158,8 @@ fn catalog_exact_mint_never_substitutes_ticker() {
 #[test]
 fn manifest_exposes_scoped_skills_and_svm_tools() {
     let m = DottieApp.manifest();
-    assert_eq!(m.sdk_version, "6.0.0");
+    assert_eq!(m.sdk_version, "7.0.0");
+    assert_eq!(m.ffi_version, Some(1));
     assert_eq!(m.namespaces.unwrap(), vec!["aomi-core", "svm-core"]);
     assert_eq!(m.tools.len(), 8);
     assert_eq!(m.skills.len(), 3);
@@ -169,6 +170,24 @@ fn manifest_exposes_scoped_skills_and_svm_tools() {
             .iter()
             .all(|t| t.parameters_schema["additionalProperties"] == false)
     );
+    fn check_objects(schema: &Value) {
+        match schema {
+            Value::Object(fields) => {
+                if fields.get("type").and_then(Value::as_str) == Some("object") {
+                    assert!(schema["properties"].is_object(), "{schema}");
+                }
+                fields.values().for_each(check_objects);
+            }
+            Value::Array(items) => items.iter().for_each(check_objects),
+            _ => {}
+        }
+    }
+    for tool in &m.tools {
+        check_objects(&tool.parameters_schema);
+        if tool.parameters_schema["properties"] == json!({}) {
+            assert_eq!(tool.parameters_schema["required"], json!([]));
+        }
+    }
 }
 #[test]
 fn instruction_contract_checks_payer_mints_amounts_and_freshness() {
@@ -203,4 +222,65 @@ fn about_reports_build_and_session() {
     assert_eq!(out["sdk"], aomi_sdk::AOMI_SDK_VERSION);
     assert_eq!(out["ffi"], aomi_sdk::AOMI_FFI_VERSION);
     assert_eq!(out["session_id"], "s-1");
+}
+
+#[test]
+fn telegram_manifest_provisions_solana_wallets_and_checks_pasted_mints() {
+    let config: toml::Value = toml::from_str(include_str!("../aomi.toml")).unwrap();
+    let wallets = &config["wallets"];
+    assert_eq!(wallets["agent"].as_bool(), Some(true));
+    assert_eq!(wallets["create"].as_bool(), Some(true));
+    assert_eq!(wallets["suggest"].as_str(), Some("instant"));
+    assert_eq!(
+        wallets["families"].as_array().unwrap(),
+        &[toml::Value::String("svm".into())]
+    );
+
+    let shortcut = &config["shortcuts"][0];
+    let manifest = DottieApp.manifest();
+    let tool = manifest
+        .tools
+        .iter()
+        .find(|t| Some(t.name.as_str()) == shortcut["tool"].as_str())
+        .unwrap();
+    assert!(
+        tool.parameters_schema["properties"]
+            .get(shortcut["arg"].as_str().unwrap())
+            .is_some()
+    );
+    let pattern = regex::Regex::new(shortcut["pattern"].as_str().unwrap()).unwrap();
+    assert_eq!(&pattern.captures(&format!(" {SOL}\n")).unwrap()[1], SOL);
+    for input in [
+        "0x17c4365eb2bac646c1903f398e7f2e047b1e473a",
+        "buy SOL",
+        "So11111111111111111111111111111111111111110",
+    ] {
+        assert!(!pattern.is_match(input), "{input}");
+    }
+    // A base58-shaped value can still have the wrong decoded size. The tool
+    // rejects it before making an external request.
+    let invalid = "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz";
+    assert!(pattern.is_match(invalid));
+    let out = run_tool::<tools::TokenCheck>(
+        &DottieApp,
+        json!({"mint":invalid}),
+        TestCtxBuilder::new("dottie_token_check").build(),
+    )
+    .unwrap();
+    assert_eq!(out.value["error"]["code"], "INVALID_ARGUMENT");
+}
+
+#[test]
+fn workspace_and_app_share_the_sdk7_pin() {
+    let root: toml::Value = toml::from_str(include_str!("../../../Cargo.toml")).unwrap();
+    let app: toml::Value = toml::from_str(include_str!("../Cargo.toml")).unwrap();
+    assert_eq!(
+        root["workspace"]["dependencies"]["aomi-sdk"].as_str(),
+        Some("=7.0.0")
+    );
+    assert_eq!(
+        app["dependencies"]["aomi-sdk"]["workspace"].as_bool(),
+        Some(true)
+    );
+    assert_eq!(dottie::BUILD, "v3");
 }

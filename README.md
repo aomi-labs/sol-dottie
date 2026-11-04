@@ -152,8 +152,9 @@ hosted ID exists yet. For a local one, use `scripts/local-stack.sh`.
 
 1. Import this repository root in Aomi Build, or use a local backend that loads
    the app.
-2. Run the platform's SDK and manifest preflight and activation against SDK
-   6.0.0. Record the activated commit and app ID.
+2. Run the platform's SDK and manifest preflight before activation. This repo's
+   v3 app pins SDK 7.0.0 (FFI 1) and requires the renamed Solana host tools.
+   See [the version split](docs/sdk-versions.md). Record the activated commit and app ID.
 3. Set `VITE_DOTTIE_APPLICATION_ID` and `VITE_AOMI_API_URL` in `web/.env.local`,
    or open `http://localhost:3004/?application_id=<id>`.
 4. Point the existing Telegram adapter at the same app.

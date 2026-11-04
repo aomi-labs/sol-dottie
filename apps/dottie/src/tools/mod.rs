@@ -1,5 +1,7 @@
 use crate::{domain, providers, runtime::DottieApp, view};
-use aomi_sdk::{DynAomiTool, DynToolCallCtx, schemars::JsonSchema};
+use aomi_sdk::{
+    AOMI_FFI_VERSION, AOMI_SDK_VERSION, DynAomiTool, DynToolCallCtx, schemars::JsonSchema,
+};
 use serde::Deserialize;
 use serde_json::{Value, json};
 
@@ -34,6 +36,18 @@ pub struct QuoteArgs {
     pub slippage_bps: u16,
 }
 
+pub struct About;
+impl DynAomiTool for About {
+    type App = DottieApp;
+    type Args = EmptyArgs;
+    const NAME: &'static str = "dottie_about";
+    const DESCRIPTION: &'static str = "Report which build of Dottie is running: app name, build, SDK and FFI versions, and the session id.";
+    fn run(_: &DottieApp, _: EmptyArgs, ctx: DynToolCallCtx) -> Result<Value, String> {
+        Ok(
+            json!({"app":"dottie","build":crate::BUILD,"sdk":AOMI_SDK_VERSION,"ffi":AOMI_FFI_VERSION,"session_id":ctx.session_id}),
+        )
+    }
+}
 pub struct Assets;
 impl DynAomiTool for Assets {
     type App = DottieApp;

@@ -6,4 +6,4 @@ target
 .wrangler
 plugins
 .cargo-home
-/pnpm-lock.yaml
+client/.env

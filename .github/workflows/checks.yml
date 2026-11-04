@@ -15,9 +15,6 @@ jobs:
       - run: cargo test --workspace --locked
   web:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: web
     env:
       NODE_OPTIONS: --max-old-space-size=6144
     steps:
@@ -27,9 +24,9 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
-          cache-dependency-path: web/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
-      - run: pnpm build
+      - run: pnpm -r typecheck
+      - run: pnpm build:web
   trace:
     runs-on: ubuntu-latest
     steps:

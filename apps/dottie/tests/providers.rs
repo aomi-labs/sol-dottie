@@ -1,6 +1,7 @@
 use aomi_sdk::{
     DynAomiApp,
     testing::{TestCtxBuilder, run_tool},
+    validate_app_skills_with_tools,
 };
 use dottie::{
     domain::{self, FLUXB, SOL},
@@ -159,8 +160,10 @@ fn manifest_exposes_scoped_skills_and_svm_tools() {
     let m = DottieApp.manifest();
     assert_eq!(m.sdk_version, "6.0.0");
     assert_eq!(m.namespaces.unwrap(), vec!["aomi-core", "svm-core"]);
-    assert_eq!(m.tools.len(), 7);
+    assert_eq!(m.tools.len(), 8);
     assert_eq!(m.skills.len(), 3);
+    validate_app_skills_with_tools(&m.name, &m.skills, &m.tools)
+        .expect("skills validate against tools");
     assert!(
         m.tools
             .iter()
@@ -186,4 +189,18 @@ fn instruction_contract_checks_payer_mints_amounts_and_freshness() {
     let mut q = quote();
     q["quote"]["amountIn"] = json!(2);
     assert!(fluxbeam::validate_instruction(&ix, &q, wallet, 100, 110).is_err());
+}
+#[test]
+fn about_reports_build_and_session() {
+    let ctx = TestCtxBuilder::new("dottie_about")
+        .session_id("s-1")
+        .build();
+    let out = run_tool::<tools::About>(&DottieApp, json!({}), ctx)
+        .unwrap()
+        .value;
+    assert_eq!(out["app"], "dottie");
+    assert_eq!(out["build"], dottie::BUILD);
+    assert_eq!(out["sdk"], aomi_sdk::AOMI_SDK_VERSION);
+    assert_eq!(out["ffi"], aomi_sdk::AOMI_FFI_VERSION);
+    assert_eq!(out["session_id"], "s-1");
 }

@@ -7,6 +7,7 @@ use serde_json::{Value, json};
 
 #[derive(Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
+#[schemars(extend("properties" = {}, "required" = []))]
 pub struct EmptyArgs {}
 #[derive(Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]

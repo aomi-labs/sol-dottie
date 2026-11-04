@@ -6,7 +6,7 @@ pub mod tools;
 pub mod view;
 
 /// Bump this when you ship a change so `dottie_about` shows which build is running.
-pub const BUILD: &str = "v1";
+pub const BUILD: &str = "v3";
 
 dyn_aomi_app!(
     app = runtime::DottieApp,

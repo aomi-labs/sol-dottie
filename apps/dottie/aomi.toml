@@ -2,3 +2,17 @@
 name = "dottie"
 display_name = "Sol Dottie"
 public = true
+
+# Provision a managed Solana wallet per user on first use. The bot's
+# own connection starts Instant; users can switch to Ask in /wallet.
+[wallets]
+agent = true
+create = true
+families = ["svm"]
+suggest = "instant"
+
+# A pasted Solana mint opens its risk report directly, without a model turn.
+[[shortcuts]]
+pattern = '^\s*([1-9A-HJ-NP-Za-km-z]{32,44})\s*$'
+tool = "dottie_token_check"
+arg = "mint"

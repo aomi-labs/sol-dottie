@@ -1,3 +1,7 @@
 [workspace]
 resolver = "3"
 members = ["apps/dottie"]
+
+[workspace.dependencies]
+# aomi-build reads the SDK pin from the repo root; it must use the backend-supported FFI contract.
+aomi-sdk = "=7.0.0"

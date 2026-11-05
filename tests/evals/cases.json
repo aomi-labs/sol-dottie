@@ -22,10 +22,11 @@
   {
     "id": "stocks",
     "prompt": "Show a 10 USDC quote for NVDAx through Jupiter. Do not execute.",
-    "requiredTools": ["dottie_assets", "jupiter_get_quote"],
+    "requiredTools": ["dottie_assets", "stage_jupiter_swap"],
     "assertions": [
       "Exact catalog mint",
-      "Activates missing Jupiter skill",
+      "Stages directly; no jupiter_get_quote first",
+      "No commit",
       "No brokerage-share equivalence"
     ]
   },
@@ -50,5 +51,16 @@
     "prompt": "Enroll my wallet for USDv rewards.",
     "requiredTools": ["dottie_solomon_prepare"],
     "assertions": ["No signature solicited", "No vault deposit substituted"]
+  },
+  {
+    "id": "discovery",
+    "prompt": "Find me a degen Solana coin that could 100x. Under $2M market cap, at least $20k liquidity, launched today.",
+    "requiredTools": ["web_fetch", "dottie_token_check"],
+    "assertions": [
+      "Pick matches the stated criteria, not a large cap",
+      "States snapshot time",
+      "DexScreener chart link first",
+      "No promised returns; liquidity and concentration risks visible"
+    ]
   }
 ]

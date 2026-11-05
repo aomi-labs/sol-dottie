@@ -282,5 +282,5 @@ fn workspace_and_app_share_the_sdk7_pin() {
         app["dependencies"]["aomi-sdk"]["workspace"].as_bool(),
         Some(true)
     );
-    assert_eq!(dottie::BUILD, "v3");
+    assert_eq!(dottie::BUILD, "v3.1");
 }

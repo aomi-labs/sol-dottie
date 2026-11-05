@@ -4,9 +4,9 @@ Inspected 2026-11-02. Backend reference: product-mono `9cbfed7250a945e98a5f3eaaa
 
 ## Runtime reuse
 
-Built-in SVM manifests cover Jupiter, Raydium, Sanctum, deBridge, Kamino, Marinade, Drift, Meteora, OpenBook, Squads and Swig. Jupiter/Raydium expose quote and preparation tools; Sanctum/deBridge expose preparation tools; the remaining protocols are instruction/IDL/guard playbooks. Orca has an IDL but no current skill manifest. Dottie does not duplicate these.
+Enabled Solana host skills (product-mono `f9ab23d5c`): Jupiter, Raydium, Kamino, Orca, Marinade, SPL Token and Swig. Sanctum, Drift, Meteora, OpenBook and Squads are disabled. Jupiter, Raydium and Kamino expose stage tools (`stage_jupiter_swap` carries its own quote); the rest are instruction/IDL playbooks. Dottie does not duplicate these.
 
-The host merges app-scoped skills into the bound thread; built-in skill activation is gated by available tool names. Declaring `svm-core` requires an activation smoke test on the deployed host. Host `svm_stage_ix`/`svm_stage_tx` → matching simulation → `svm_commit_txs` remains the only planned execution path. Current custom providers emit no execution routes.
+The host merges app-scoped skills into the bound thread; built-in skill activation is gated by available tool names. Declaring `svm-core` requires an activation smoke test on the deployed host. Host `svm_stage_ix` or a protocol stage tool → `svm_simulate` (ordered ids, instruction and venue ids may mix) → `svm_commit_txs` remains the only execution path; `svm_stage_tx` is host-only. Confirmation arrives in chat as a callback, so the model never polls `get_transaction`. Current custom providers emit no execution routes.
 
 ## RugCheck
 

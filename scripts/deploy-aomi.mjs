@@ -60,12 +60,9 @@ export async function deployAomi(env, { fetch = globalThis.fetch, sleep = pause,
   }
 
   if (!await isCurrentMain()) return log('Skipping superseded main commit');
-  // Verify the existing application before making any deployment write.
+  // Project preflight resolves and authorizes the app through its scoped token.
+  // A name-only read is ambiguous when playground and canonical share a name.
   const livePath = `/api/platforms/${platform}/apps/${appName}`;
-  const existing = (await request(livePath)).app;
-  if (existing?.id !== applicationId || existing.project_id !== projectId) {
-    throw new Error('Existing Dottie application does not belong to the configured project');
-  }
   const deployPath = `/api/projects/${projectId}/deploy`;
   verifyDeployment((await request(deployPath, { source_ref: sha, preflight: true })).deployment);
   const deployment = verifyDeployment((await request(deployPath, { source_ref: sha, preflight: false, build: true })).deployment);

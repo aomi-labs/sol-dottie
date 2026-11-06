@@ -48,6 +48,9 @@ function harness(overrides = {}) {
         assert.equal(init.headers.Authorization, 'Bearer test-aomi-credential');
         assert.equal(init.redirect, 'error');
         if (url.pathname.endsWith('/apps/dottie')) {
+          if (overrides.duplicateName && !url.searchParams.has('release_tag')) {
+            return Response.json({ error: 'app token may only read its own app' }, { status: 403 });
+          }
           result = { app: overrides.app?.(++liveReads) ?? app };
         } else if (url.pathname.endsWith('/deploy')) {
           assert.deepEqual(body, body.preflight ? { source_ref: sha, preflight: true } : { source_ref: sha, preflight: false, build: true });
@@ -72,12 +75,12 @@ function harness(overrides = {}) {
 test('preflight, deploy exact SHA, await assets, activate and verify the active artifact', async () => {
   const h = harness({
     status: (n, ready) => n === 1 ? { ...ready, state: 'building' } : ready,
-    app: n => ({ ...app, artifact_ready: n !== 2 }),
+    app: n => ({ ...app, artifact_ready: n !== 1 }),
   });
   await h.run();
   assert.deepEqual(h.calls.filter(c => c.body).map(c => c.body.preflight ?? c.body.target.kind), [true, false, 'deployment']);
   assert.equal(h.calls.filter(c => c.path.endsWith('/status')).length, 2);
-  assert.equal(h.calls.filter(c => c.path.endsWith('/apps/dottie')).length, 3);
+  assert.equal(h.calls.filter(c => c.path.endsWith('/apps/dottie')).length, 2);
   assert.match(h.logs.at(-1), /artifact ready/);
 });
 
@@ -95,10 +98,10 @@ test('superseded commit makes no Aomi calls', async () => {
   assert.equal(h.calls.length, 1);
 });
 
-test('wrong existing app binding fails before deployment', async () => {
-  const h = harness({ app: () => ({ ...app, project_id: 999 }) });
-  await assert.rejects(h.run(), /does not belong/);
-  assert.equal(h.calls.some(c => c.body), false);
+test('wrong project in preflight fails before applying a deployment', async () => {
+  const h = harness({ deployment: { ...deployment, source: { ...deployment.source, project_id: 999 } } });
+  await assert.rejects(h.run(), /does not match/);
+  assert.equal(h.calls.filter(c => c.body).length, 1);
 });
 
 test('failed preflight never submits an apply request or leaks remote body', async () => {
@@ -141,4 +144,10 @@ test('activation of another app is not treated as success', async () => {
 test('active metadata without a ready artifact times out', async () => {
   const h = harness({ app: () => ({ ...app, artifact_ready: false }) });
   await assert.rejects(h.run(), /Timed out waiting for the active Dottie artifact/);
+});
+
+test('same-name playground app cannot block canonical deployment', async () => {
+  const h = harness({ duplicateName: true });
+  await h.run();
+  assert.match(h.logs.at(-1), /artifact ready/);
 });

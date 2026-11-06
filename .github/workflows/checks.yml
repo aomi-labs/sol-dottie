@@ -3,6 +3,30 @@ on: [push, pull_request]
 permissions:
   contents: read
 jobs:
+  deploy-aomi:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [app, trace]
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    concurrency:
+      group: aomi-dottie-staging
+      cancel-in-progress: false
+    environment:
+      name: aomi-staging
+      url: https://build-staging.aomi.dev/deployments/1674
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Deploy and activate Dottie on Aomi Build
+        env:
+          AOMI_BACKEND_URL: https://api-staging.aomi.dev
+          AOMI_PROJECT_ID: '1674'
+          AOMI_APPLICATION_ID: '2937820'
+          AOMI_DEPLOY_TOKEN: ${{ secrets.AOMI_DEPLOY_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/deploy-aomi.mjs
   app:
     runs-on: ubuntu-latest
     steps:
@@ -48,6 +72,7 @@ jobs:
       url: https://dottie.aomi.dev
     env:
       NODE_OPTIONS: --max-old-space-size=6144
+      VITE_DOTTIE_APPLICATION_ID: '2937820'
       CLOUDFLARE_ACCOUNT_ID: 210e3092c7936592ca2078b5e26f7ea2
     steps:
       - uses: actions/checkout@v4

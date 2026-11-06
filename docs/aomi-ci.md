@@ -6,7 +6,7 @@ push to `main`. PRs only run checks. Cloudflare Pages publishing runs separately
 The job uses the existing V2 Project API, rather than copying build artifacts
 into the platform repository or merging Aomi's generated candidate PR:
 
-1. Verify the existing Dottie application and current main commit.
+1. Verify current main, then use app-scoped Project preflight to validate the repository, commit and app. Name-only app reads are ambiguous because playground and canonical share `dottie`.
 2. Preflight the exact GitHub event SHA, then deploy with `build: true`. The
    manager dispatches the trusted platform workflow with activation disabled.
 3. Wait up to 30 minutes for platform CI and verified release assets.
@@ -48,8 +48,7 @@ Requires the manager build-dispatch support in the linked backend PR before merg
 `node --test tests/deploy-aomi.test.mjs` checks the sequence and failure gates
 with mocked APIs; it does not deploy. The live staging SDK requires
 `aomi-sdk = "=7.0.0"`, matching the app. The Project ID comes from the existing
-platform deployment manifest; CI confirms its binding through the live app read
-before writing.
+platform deployment manifest; CI confirms source identity through preflight before applying, then verifies the exact release and application ID after activation.
 
 An activated, artifact-ready release is not proof of completed chat or trading.
 Exercise those separately through the existing app. A failed activation/readiness

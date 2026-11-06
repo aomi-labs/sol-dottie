@@ -101,7 +101,7 @@ export async function deployAomi(env, { fetch = globalThis.fetch, sleep = pause,
     apps: [appName],
     actor: `github-actions:${env.GITHUB_RUN_ID ?? sha}`,
   });
-  const apps = activated.activation?.apps;
+  const apps = activated.apps;
   if (activated.ok !== true || apps?.length !== 1 || apps[0].error ||
       apps[0].application_id !== applicationId || apps[0].release_tag !== release || apps[0].is_active !== true) {
     throw new Error('Aomi did not activate the expected Dottie release');

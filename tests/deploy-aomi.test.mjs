@@ -62,7 +62,7 @@ function harness(overrides = {}) {
           assert.deepEqual(body.target, { kind: 'deployment', value: deployment.id });
           assert.deepEqual(body.apps, ['dottie']);
           result = overrides.activation ?? {
-            ok: true, activation: { apps: [{ name: 'dottie', application_id: 2937820, release_tag: release, is_active: true }] },
+            ok: true, activation: { status: 'activating' }, apps: [{ name: 'dottie', application_id: 2937820, release_tag: release, is_active: true }],
           };
         } else throw new Error(`Unexpected API path: ${url.pathname}`);
       }
@@ -132,12 +132,12 @@ test('main advancing during the build leaves the candidate inactive', async () =
 });
 
 test('partial activation fails even with HTTP 202 success envelope', async () => {
-  const h = harness({ activation: { ok: false, activation: { apps: [{ error: 'failed' }] } } });
+  const h = harness({ activation: { ok: false, apps: [{ error: 'failed' }] } });
   await assert.rejects(h.run(), /operation failed/);
 });
 
 test('activation of another app is not treated as success', async () => {
-  const h = harness({ activation: { ok: true, activation: { apps: [{ application_id: 999, is_active: true, release_tag: release }] } } });
+  const h = harness({ activation: { ok: true, apps: [{ application_id: 999, is_active: true, release_tag: release }] } });
   await assert.rejects(h.run(), /did not activate/);
 });
 

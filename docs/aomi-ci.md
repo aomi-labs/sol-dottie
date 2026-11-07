@@ -11,7 +11,7 @@ into the platform repository or merging Aomi's generated candidate PR:
    manager dispatches the trusted platform workflow with activation disabled.
 3. Wait up to 30 minutes for platform CI and verified release assets.
 4. Recheck main; leave superseded candidates inactive.
-5. Activate only Dottie from that deployment, then wait for its exact active artifact.
+5. Activate only Dottie from that deployment, then wait for its exact active artifact and runtime-loaded state.
 
 Runs are serialized without cancelling an in-flight activation. Request timeouts
 and polling limits fail the job instead of leaving it green while Aomi is still
@@ -46,7 +46,7 @@ Requires the manager build-dispatch support in the linked backend PR before merg
 ## Verification and recovery
 
 `node --test tests/deploy-aomi.test.mjs` checks the sequence and failure gates
-with mocked APIs; it does not deploy. The live staging SDK requires
+with mocked APIs; it does not deploy. Activation is asynchronous: a successful acknowledgment may omit app snapshots. The release-qualified live read must match the canonical app, Project, and release and report active, artifact-ready, and loaded before the job succeeds. The live staging SDK requires
 `aomi-sdk = "=7.0.0"`, matching the app. The Project ID comes from the existing
 platform deployment manifest; CI confirms source identity through preflight before applying, then verifies the exact release and application ID after activation.
 

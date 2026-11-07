@@ -19,7 +19,7 @@ const deployment = {
   source: { project_id: 1674, repository_link: 'aomi-labs/sol-dottie', commit_hash: sha },
   platform: { platform: 'community', apps: [{ name: 'dottie', release_tag: release }] },
 };
-const app = { id: 2937820, project_id: 1674, app_release_tag: release, is_active: true, artifact_ready: true };
+const app = { id: 2937820, project_id: 1674, app_release_tag: release, is_active: true, artifact_ready: true, loaded: true };
 
 function harness(overrides = {}) {
   const calls = [];
@@ -62,7 +62,7 @@ function harness(overrides = {}) {
           assert.deepEqual(body.target, { kind: 'deployment', value: deployment.id });
           assert.deepEqual(body.apps, ['dottie']);
           result = overrides.activation ?? {
-            ok: true, activation: { status: 'activating' }, apps: [{ name: 'dottie', application_id: 2937820, release_tag: release, is_active: true }],
+            ok: true, activation: { status: 'activating', platform: 'community', target: { kind: 'release_tags', value: [release] } },
           };
         } else throw new Error(`Unexpected API path: ${url.pathname}`);
       }
@@ -151,3 +151,16 @@ test('same-name playground app cannot block canonical deployment', async () => {
   await h.run();
   assert.match(h.logs.at(-1), /artifact ready/);
 });
+
+for (const [name, patch] of [
+  ['wrong app', { id: 2937818 }],
+  ['wrong project', { project_id: 1672 }],
+  ['wrong release', { app_release_tag: 'old-release' }],
+  ['inactive', { is_active: false }],
+  ['runtime not loaded', { loaded: false }],
+]) {
+  test(`accepted activation with ${name} never passes readiness`, async () => {
+    const h = harness({ app: () => ({ ...app, ...patch }) });
+    await assert.rejects(h.run(), /Timed out waiting for the active Dottie artifact/);
+  });
+}

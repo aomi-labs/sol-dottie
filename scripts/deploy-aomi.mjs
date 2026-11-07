@@ -102,14 +102,16 @@ export async function deployAomi(env, { fetch = globalThis.fetch, sleep = pause,
     actor: `github-actions:${env.GITHUB_RUN_ID ?? sha}`,
   });
   const apps = activated.apps;
-  if (activated.ok !== true || apps?.length !== 1 || apps[0].error ||
-      apps[0].application_id !== applicationId || apps[0].release_tag !== release || apps[0].is_active !== true) {
+  // The manager's 202 acknowledgment may omit app snapshots. The live read
+  // below is the readiness authority; reject conflicting snapshots if supplied.
+  if (activated.ok !== true || (apps !== undefined && (apps?.length !== 1 || apps[0].error ||
+      apps[0].application_id !== applicationId || apps[0].release_tag !== release || apps[0].is_active !== true))) {
     throw new Error('Aomi did not activate the expected Dottie release');
   }
   await poll(async () => {
     const app = (await request(`${livePath}?release_tag=${encodeURIComponent(release)}`)).app;
     return app?.id === applicationId && app.project_id === projectId &&
-      app.app_release_tag === release && app.is_active === true && app.artifact_ready === true;
+      app.app_release_tag === release && app.is_active === true && app.artifact_ready === true && app.loaded === true;
   }, 'the active Dottie artifact', 24);
   log(`Activated ${release} for application ${applicationId}; artifact ready`);
   if (env.GITHUB_STEP_SUMMARY) {

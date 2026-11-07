@@ -19,6 +19,7 @@ const deployment = {
   source: { project_id: 1674, repository_link: 'aomi-labs/sol-dottie', commit_hash: sha },
   platform: { platform: 'community', apps: [{ name: 'dottie', release_tag: release }] },
 };
+const activation = { status: 'activating', platform: 'community', target: { kind: 'release_tags', value: [release] } };
 const app = { id: 2937820, project_id: 1674, app_release_tag: release, is_active: true, artifact_ready: true, loaded: true };
 
 function harness(overrides = {}) {
@@ -62,7 +63,7 @@ function harness(overrides = {}) {
           assert.deepEqual(body.target, { kind: 'deployment', value: deployment.id });
           assert.deepEqual(body.apps, ['dottie']);
           result = overrides.activation ?? {
-            ok: true, activation: { status: 'activating', platform: 'community', target: { kind: 'release_tags', value: [release] } },
+            ok: true, activation,
           };
         } else throw new Error(`Unexpected API path: ${url.pathname}`);
       }
@@ -137,7 +138,7 @@ test('partial activation fails even with HTTP 202 success envelope', async () =>
 });
 
 test('activation of another app is not treated as success', async () => {
-  const h = harness({ activation: { ok: true, apps: [{ application_id: 999, is_active: true, release_tag: release }] } });
+  const h = harness({ activation: { ok: true, activation, apps: [{ application_id: 999, is_active: true, release_tag: release }] } });
   await assert.rejects(h.run(), /did not activate/);
 });
 
@@ -162,5 +163,18 @@ for (const [name, patch] of [
   test(`accepted activation with ${name} never passes readiness`, async () => {
     const h = harness({ app: () => ({ ...app, ...patch }) });
     await assert.rejects(h.run(), /Timed out waiting for the active Dottie artifact/);
+  });
+}
+
+for (const [name, patch] of [
+  ['wrong platform', { platform: 'other' }],
+  ['wrong release', { target: { kind: 'release_tags', value: ['other-release'] } }],
+  ['missing target', { target: null }],
+  ['failed status', { status: 'failed' }],
+]) {
+  test(`rejects acknowledgment with ${name} even when expected release is live`, async () => {
+    const h = harness({ activation: { ok: true, activation: { ...activation, ...patch } } });
+    await assert.rejects(h.run(), /different activation target/);
+    assert.equal(h.calls.some(c => c.path.endsWith('/apps/dottie')), false);
   });
 }

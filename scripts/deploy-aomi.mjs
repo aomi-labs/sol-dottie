@@ -6,6 +6,7 @@ const repository = 'aomi-labs/sol-dottie';
 const platform = 'community';
 const appName = 'dottie';
 
+/** Deploy current canonical main and require its exact release to be live and loaded. */
 export async function deployAomi(env, { fetch = globalThis.fetch, sleep = pause, log = console.log } = {}) {
   for (const key of ['AOMI_BACKEND_URL', 'AOMI_PROJECT_ID', 'AOMI_APPLICATION_ID', 'AOMI_DEPLOY_TOKEN', 'GH_TOKEN', 'GITHUB_SHA']) {
     if (!env[key]) throw new Error(`Missing ${key}; see docs/aomi-ci.md`);
@@ -101,6 +102,12 @@ export async function deployAomi(env, { fetch = globalThis.fetch, sleep = pause,
     apps: [appName],
     actor: `github-actions:${env.GITHUB_RUN_ID ?? sha}`,
   });
+  const activation = activated.activation;
+  if (activation?.status !== 'activating' || activation.platform !== platform ||
+      activation.target?.kind !== 'release_tags' || activation.target.value?.length !== 1 ||
+      activation.target.value[0] !== release) {
+    throw new Error('Aomi acknowledged a different activation target');
+  }
   const apps = activated.apps;
   // The manager's 202 acknowledgment may omit app snapshots. The live read
   // below is the readiness authority; reject conflicting snapshots if supplied.

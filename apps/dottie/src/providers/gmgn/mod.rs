@@ -439,8 +439,8 @@ fn unwrap_response(status: u16, text: &str, reset_header: Option<i64>) -> Result
             .unwrap_or(crate::view::now() + 60);
         return Err(Fail::RateLimited {
             source: Source::Gmgn,
-            // A ban or block never counts as a short 429, whatever its reset says.
-            retry_after_s: (reset - crate::view::now() + 1).max(if banned { 60 } else { 2 }) as u64,
+            // A ban keeps its own reset but never reads as a short (retryable) 429.
+            retry_after_s: (reset - crate::view::now() + 1).max(if banned { 4 } else { 2 }) as u64,
         });
     }
     if body.get("code").and_then(Value::as_i64) != Some(0) {
@@ -558,7 +558,7 @@ mod tests {
         let ban = format!(r#"{{"code":1,"error":"RATE_LIMIT_BANNED","reset_at":{soon}}}"#);
         assert!(matches!(
             unwrap_response(429, &ban, None),
-            Err(Fail::RateLimited { retry_after_s, .. }) if retry_after_s >= 60
+            Err(Fail::RateLimited { retry_after_s, .. }) if retry_after_s > 3
         ));
     }
 

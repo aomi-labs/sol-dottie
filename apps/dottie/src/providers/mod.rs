@@ -21,6 +21,7 @@ pub const USDC: &str = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 pub const USDT: &str = "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB";
 pub const TOKEN_PROGRAM: &str = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
 pub const TOKEN_2022_PROGRAM: &str = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb";
+pub const ASSOCIATED_TOKEN_PROGRAM: &str = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL";
 
 /// A provider number that may arrive as a JSON number, a string, or null.
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
@@ -180,6 +181,32 @@ pub fn signature(value: &str) -> Result<&str, Fail> {
     Ok(v)
 }
 
+/// The wallet's associated token account for a mint under one token
+/// program: the program address of (wallet, program, mint) owned by the
+/// associated-token program. None for an address that isn't base58.
+pub fn associated_token_account(wallet: &str, mint: &str, program: &str) -> Option<String> {
+    use curve25519_dalek::edwards::CompressedEdwardsY;
+    use sha2::{Digest, Sha256};
+    let key = |s: &str| -> Option<[u8; 32]> { bs58::decode(s).into_vec().ok()?.try_into().ok() };
+    let seeds = [key(wallet)?, key(program)?, key(mint)?];
+    let owner = key(ASSOCIATED_TOKEN_PROGRAM)?;
+    (0..=u8::MAX).rev().find_map(|bump| {
+        let mut hash = Sha256::new();
+        for seed in &seeds {
+            hash.update(seed);
+        }
+        hash.update([bump]);
+        hash.update(owner);
+        hash.update(b"ProgramDerivedAddress");
+        let address: [u8; 32] = hash.finalize().into();
+        // A program address is one no private key can sign for: off the curve.
+        CompressedEdwardsY(address)
+            .decompress()
+            .is_none()
+            .then(|| bs58::encode(address).into_string())
+    })
+}
+
 /// A string that may be null; empty means unset.
 pub fn text(value: &Option<String>) -> Option<&str> {
     value.as_deref().map(str::trim).filter(|s| !s.is_empty())
@@ -213,6 +240,22 @@ mod tests {
         assert!(pubkey("So1111111111111111111111111111111111111111/").is_err());
         let sig = "2vSjGUroogbM4Xu7BiiEmK9NcthCm39Gi2CMxFUeVWZRSUrVfSZhasAvEBYCNKk1wKiUoJGFs8ykUzMViDanj3w3";
         assert!(signature(sig).is_ok() && signature(bonk).is_err());
+    }
+
+    #[test]
+    fn associated_token_accounts_match_the_chain() {
+        // The fork wallet's BONK account, read back from getAccountInfo.
+        let (wallet, bonk) = (
+            "DfFpn9sPxGcuEgs7M6KJ9qKtNneMZisb4EDfNKgZuJQD",
+            "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
+        );
+        assert_eq!(
+            associated_token_account(wallet, bonk, TOKEN_PROGRAM).as_deref(),
+            Some("53CdxgP5TQ3qHrQXsRPY7ThRN2Bzj29gNscpgciFfbpg")
+        );
+        let t22 = associated_token_account(wallet, bonk, TOKEN_2022_PROGRAM).unwrap();
+        assert!(pubkey(&t22).is_ok() && t22 != "53CdxgP5TQ3qHrQXsRPY7ThRN2Bzj29gNscpgciFfbpg");
+        assert_eq!(associated_token_account("0x12", bonk, TOKEN_PROGRAM), None);
     }
 
     #[test]

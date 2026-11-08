@@ -24,5 +24,5 @@ Pass `style` only when the user names one. Otherwise leave it out: the card pick
 - Returns are before network fees and token-account rent; route fees are already in wallet flows. Preserve `card.accounting`: USDC is valued at $1; current-value and SOL/USD figures are estimates. Never call a figure after-fee profit or verified USD net profit.
 - Cost unknown means no verified cost basis (a transfer in, or a fill paid in another coin): don't invent a return. The card can still show a current position's estimated value.
 - A valuation error names price, decimals or balance: tell the user which read is unavailable. Don't blame GMGN for an RPC balance or decimals failure.
-- `NO_DATA` saying GMGN hasn't indexed the trade yet: say the card needs a minute and offer to try again.
+- `NO_DATA` saying the chain (or GMGN) doesn't show the trade yet: say the card needs a moment and offer to try again.
 - `NOT_FOUND` on a redraw: the card expired; make a new one with the coin.

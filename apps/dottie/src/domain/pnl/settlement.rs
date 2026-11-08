@@ -45,6 +45,9 @@ pub struct Legs {
     pub fee: u64,
     /// Lamports moved into (positive) or out of the wallet's token accounts.
     pub rent: i128,
+    /// The wallet's raw balance of the coin before and after.
+    pub held_before: u128,
+    pub held_after: u128,
 }
 
 /// The wallet's legs in one jsonParsed `getTransaction` result.
@@ -67,17 +70,6 @@ pub fn legs(tx: &Value, wallet: &str, token: &str) -> Result<Legs, Fail> {
     let lamports =
         |field: &str, i: usize| -> i128 { meta[field][i].as_u64().map_or(0, i128::from) };
     let delta = |i: usize| lamports("postBalances", i) - lamports("preBalances", i);
-    let Some(me) = keys.iter().position(|k| *k == wallet) else {
-        return Err(Fail::NoData(
-            "the wallet isn't in an indexed transaction".into(),
-        ));
-    };
-    let payer = me == 0;
-    let fee = if payer {
-        meta["fee"].as_u64().unwrap_or(0)
-    } else {
-        0
-    };
     // Token accounts the wallet owns in this transaction, by account index.
     let mut owned: BTreeMap<u64, (String, i128, i128)> = BTreeMap::new();
     for (field, post) in [("preTokenBalances", false), ("postTokenBalances", true)] {
@@ -101,10 +93,22 @@ pub fn legs(tx: &Value, wallet: &str, token: &str) -> Result<Legs, Fail> {
             }
         }
     }
+    // A transfer to the wallet's token account need not list the wallet
+    // itself; then it moved no SOL and paid no fee.
+    let me = keys.iter().position(|k| *k == wallet);
+    if me.is_none() && owned.is_empty() {
+        return Err(Fail::NoData(
+            "the wallet isn't in an indexed transaction".into(),
+        ));
+    }
+    let fee = match me {
+        Some(0) => meta["fee"].as_u64().unwrap_or(0),
+        _ => 0,
+    };
     let mut out = Legs {
         slot: tx["slot"].as_u64().unwrap_or(0),
         fee,
-        sol: delta(me) + i128::from(fee),
+        sol: me.map_or(0, delta) + i128::from(fee),
         ..Legs::default()
     };
     for (index, (mint, pre, post)) in &owned {
@@ -121,6 +125,8 @@ pub fn legs(tx: &Value, wallet: &str, token: &str) -> Result<Legs, Fail> {
         let moved = post - pre;
         if mint == token {
             out.token += moved;
+            out.held_before += pre.unsigned_abs();
+            out.held_after += post.unsigned_abs();
         } else if mint == USDC {
             out.usdc += moved;
         }
@@ -137,12 +143,15 @@ struct Op {
     cash: Option<f64>,
 }
 
+/// `sol_usd` prices SOL legs when the rows carry no indexed rate (rounds
+/// found on chain); either way the result is marked estimated.
 pub async fn read(
     rpc: Rpc<'_>,
     turn: &Turn,
     wallet: &str,
     token: &str,
     rows: &[Activity],
+    sol_usd_now: Option<f64>,
 ) -> Result<Settlement, Fail> {
     // One entry per transaction, oldest first.
     let mut trades: Vec<(String, Vec<&Activity>)> = vec![];
@@ -163,7 +172,7 @@ pub async fn read(
             "this round has too many transactions to reconcile in one card".into(),
         ));
     }
-    let fx = sol_usd(rows);
+    let fx = sol_usd(rows).or(sol_usd_now);
     let mut s = Settlement {
         cost: None,
         out: 0.0,

@@ -1,14 +1,18 @@
-//! GMGN identifies trade rounds; confirmed Solana transactions determine
-//! money in and out, one fill at a time. Route fees are already in those
+//! The chain identifies trade rounds (the wallet's token-account
+//! signatures), with GMGN's index as the fallback when the RPC has no
+//! history; confirmed Solana transactions determine money in and out, one
+//! fill at a time. Route fees are already in those
 //! legs. Network fees and token-account rent are reported separately in
 //! SOL, never mixed into a before-fee return.
 //!
 //! Policy: profit and return cover the whole round, (proceeds + value now −
 //! buy cost) ÷ buy cost. Realized and unrealized split that profit by
 //! moving weighted-average cost: a sale releases its share of the basis.
+pub mod chain;
 pub mod settlement;
 use crate::card::Card;
 use crate::providers::gmgn::{Gmgn, types::Activity};
+use crate::providers::jupiter::Jupiter;
 use crate::providers::rpc::Rpc;
 use crate::providers::signature;
 use crate::runtime::{Fail, Runtime, Turn};
@@ -29,30 +33,33 @@ pub async fn card(
     tx: Option<&str>,
 ) -> Result<Card, Fail> {
     let gmgn = Gmgn::new(rt, turn);
+    let rpc = Rpc::new(rt, turn);
     let tx = tx.map(signature).transpose()?.map(str::to_string);
-    let mut rows = vec![];
-    for wait in INDEX_WAIT {
-        tokio::time::sleep(Duration::from_secs(wait)).await;
-        rows = history(gmgn, wallet, token, tx.as_deref()).await?;
-        if tx
-            .as_ref()
-            .is_none_or(|t| rows.iter().any(|r| r.tx_hash == *t))
-        {
-            break;
+    let symbol = match super::market::known(token) {
+        Some(asset) => Some(asset.symbol.clone()),
+        None => gmgn.token_info(token).await.ok().and_then(|i| i.symbol),
+    };
+    let found = chain::history(rpc, wallet, token, symbol.as_deref(), tx.as_deref()).await;
+    let (rows, on_chain) = match found {
+        Ok(Some(rows)) => (rows, true),
+        Ok(None) => (indexed(gmgn, wallet, token, tx.as_deref()).await?, false),
+        Err(fail @ (Fail::NoData(_) | Fail::Invalid(_))) => return Err(fail),
+        Err(fail) => {
+            turn.gap(format!(
+                "the RPC's history is unavailable ({}); rounds come from GMGN's index",
+                fail.code()
+            ));
+            (indexed(gmgn, wallet, token, tx.as_deref()).await?, false)
         }
-    }
-    if let Some(t) = &tx
-        && !rows.iter().any(|r| r.tx_hash == *t)
-    {
-        return Err(Fail::NoData(format!(
-            "GMGN hasn't indexed {} yet; try again in a minute",
-            &t[..t.len().min(12)]
-        )));
-    }
+    };
     let round = round(rows, tx.as_deref())?;
     let now = crate::view::now();
-    let rpc = Rpc::new(rt, turn);
-    let settled = settlement::read(rpc, turn, wallet, token, &round.rows).await?;
+    // Rounds found on chain carry no indexed SOL rate: value SOL now.
+    let sol_usd = match on_chain {
+        true => Jupiter::new(rt, turn).sol_usd().await.ok(),
+        false => None,
+    };
+    let settled = settlement::read(rpc, turn, wallet, token, &round.rows, sol_usd).await?;
     let mut card = round.base(now);
     let basis_known = round.basis_known() && settled.sold <= settled.bought;
     card.cost = settled.cost.filter(|_| basis_known);
@@ -158,6 +165,29 @@ fn valuation_error(field: &str, fail: Fail) -> Fail {
         fail.code(),
         fail.message()
     ))
+}
+
+/// GMGN's records for the pair, waiting briefly for a requested `tx` to be
+/// indexed.
+async fn indexed(
+    gmgn: Gmgn<'_>,
+    wallet: &str,
+    token: &str,
+    tx: Option<&str>,
+) -> Result<Vec<Activity>, Fail> {
+    let mut rows = vec![];
+    for wait in INDEX_WAIT {
+        tokio::time::sleep(Duration::from_secs(wait)).await;
+        rows = history(gmgn, wallet, token, tx).await?;
+        if tx.is_none_or(|t| rows.iter().any(|r| r.tx_hash == t)) {
+            return Ok(rows);
+        }
+    }
+    let t = tx.unwrap_or_default();
+    Err(Fail::NoData(format!(
+        "GMGN hasn't indexed {} yet; try again in a minute",
+        &t[..t.len().min(12)]
+    )))
 }
 
 /// Every record GMGN has for the pair, oldest first, up to [`MAX_PAGES`].

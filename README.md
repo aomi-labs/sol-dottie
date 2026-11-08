@@ -69,6 +69,26 @@ Defaults live in `web/src/site-config.ts`. A Vite env var in `web/.env.local`
 - `web/src/mock-desk.ts`: page chrome and the sample-data desk.
 - `web/src/live-desk.tsx` and `web/src/live.css`: the live widget desk.
 
+## Telegram groups
+
+`apps/dottie/aomi.toml` opts Dottie into group chats with an explicit public
+research tool allowlist: token discovery, charts, holders, traders, exit quotes,
+Solana reads and web research. Personal wallet/account tools and direct trading
+shortcuts are excluded; the host continues personal or trading requests in the
+asker's DM.
+
+Group support requires the backend group-mode changes from
+[product-mono#1675](https://github.com/aomi-labs/product-mono/pull/1675). Deploy
+that backend first, then deploy and activate this app revision. The existing
+`main` workflow deploys and activates Dottie on staging.
+
+In a group, use `/ask@<bot_username> <question>`, mention Dottie, or reply to her
+message. For mentions to work reliably, disable privacy mode through BotFather
+(`/setprivacy` → Disable), then remove and re-add Dottie to existing groups.
+`/ask` works with privacy mode on too. Untagged conversation receives no reply.
+Start Dottie in a private chat once so she can send DM handoffs directly;
+otherwise, follow the Open chat button she posts for the asker.
+
 ## Test the app
 
 ```sh

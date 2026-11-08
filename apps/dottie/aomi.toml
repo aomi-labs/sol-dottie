@@ -3,6 +3,28 @@ name = "dottie"
 display_name = "Sol Dottie"
 public = true
 
+# Public research only. Wallet/account tools and direct trading shortcuts stay
+# outside this allowlist so the host can continue personal requests in DMs.
+[bot.group]
+enabled = true
+tools = [
+    "dottie_signals",
+    "dottie_scan",
+    "dottie_find",
+    "dottie_token",
+    "dottie_people",
+    "dottie_chart",
+    "dottie_trades",
+    "dottie_holders",
+    "dottie_exit",
+    "dottie_check",
+    "dottie_assets",
+    "dottie_fluxbeam_quote",
+    "dottie_solomon_product",
+    "svm-reads",
+    "web",
+]
+
 # Provision a managed Solana wallet per user on first use. The bot's
 # own connection starts Instant; users can switch to Ask in /wallet.
 [wallets]

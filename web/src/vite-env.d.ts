@@ -1,6 +1,9 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
+  readonly VITE_PRIVY_APP_ID?: string;
+  readonly VITE_PARA_API_KEY?: string;
+  readonly VITE_PARA_ENVIRONMENT?: "PROD" | "BETA";
   readonly VITE_AOMI_API_URL?: string;
   readonly VITE_AOMI_APPLICATION_ID?: string;
   readonly VITE_AOMI_BASE_URL?: string;

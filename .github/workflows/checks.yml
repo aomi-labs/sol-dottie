@@ -73,6 +73,9 @@ jobs:
     env:
       NODE_OPTIONS: --max-old-space-size=6144
       VITE_DOTTIE_APPLICATION_ID: '2937820'
+      VITE_PRIVY_APP_ID: ${{ vars.VITE_PRIVY_APP_ID }}
+      VITE_PARA_API_KEY: ${{ vars.VITE_PARA_API_KEY }}
+      VITE_PARA_ENVIRONMENT: ${{ vars.VITE_PARA_ENVIRONMENT }}
       CLOUDFLARE_ACCOUNT_ID: 210e3092c7936592ca2078b5e26f7ea2
     steps:
       - uses: actions/checkout@v4
@@ -86,6 +89,10 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
+          if [[ -z "$VITE_PRIVY_APP_ID" || -z "$VITE_PARA_API_KEY" || ! "$VITE_PARA_ENVIRONMENT" =~ ^(PROD|BETA)$ ]]; then
+            echo '::error::Set the public VITE_PRIVY_APP_ID, VITE_PARA_API_KEY and VITE_PARA_ENVIRONMENT repository variables to match the target portal.'
+            exit 1
+          fi
           if [[ -z "$CLOUDFLARE_API_TOKEN" ]]; then
             echo '::error::Set the CLOUDFLARE_API_TOKEN repository or production environment secret (Cloudflare Pages Edit on the Dottie account).'
             exit 1

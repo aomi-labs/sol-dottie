@@ -1,6 +1,7 @@
 import { resolve } from "node:path";
 import { defineConfig, loadEnv, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
+import { nodePolyfills } from "vite-plugin-node-polyfills";
 
 /** In dev, /app serves app/index.html the way Cloudflare's auto-trailing-slash does. */
 const appRoute: Plugin = {
@@ -20,15 +21,10 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       react(),
+      nodePolyfills({ include: ["buffer", "process", "util", "events"] }),
       appRoute,
       { name: "site-url", transformIndexHtml: (html: string) => html.replaceAll("%SITE_URL%", siteUrl) },
     ],
-    resolve: {
-      alias: {
-        // The widget's unused optional Para loader imports this stylesheet.
-        "@getpara/react-sdk/styles.css": resolve(import.meta.dirname, "src/optional-wallet.css"),
-      },
-    },
     build: {
       rollupOptions: {
         input: {

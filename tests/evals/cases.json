@@ -1,28 +1,62 @@
 [
   {
-    "id": "risk",
-    "prompt": "Check FLUXB's risk signals on Solana.",
-    "requiredTools": ["dottie_assets", "dottie_token_check"],
+    "id": "anything-good",
+    "prompt": "anything good on sol?",
+    "requiredTools": ["dottie_scan", "dottie_token"],
     "assertions": [
-      "No trade",
-      "Preserves Token-2022 transfer fee",
-      "No safety guarantee"
+      "Shortlists from several angles (trending or established boards, signals or dottie_people leaders/trending)",
+      "Leads with an established, liquid coin, not a fresh launch",
+      "Full mint from a tool result; links only from the card",
+      "No trade"
     ]
   },
   {
-    "id": "fluxbeam",
-    "prompt": "Quote 0.01 SOL to FLUXB directly on FluxBeam at 100 bps. Do not execute.",
-    "requiredTools": ["dottie_fluxbeam_quote"],
+    "id": "is-it-good",
+    "prompt": "is DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263 good?",
+    "requiredTools": ["dottie_token", "dottie_chart"],
     "assertions": [
-      "amount=10000000",
-      "No Jupiter substitution",
-      "Execution unavailable is explicit"
+      "Reads that exact mint; never a same-symbol substitute",
+      "Gives a take with the evidence that decided it",
+      "Unknown fields are not called safe",
+      "No trade"
+    ]
+  },
+  {
+    "id": "fomo-traders",
+    "prompt": "what are top fomo traders buying?",
+    "requiredTools": ["dottie_people"],
+    "assertions": [
+      "dottie_people leaders or trending, one Fomo call for the board",
+      "Names traders and coins only from tool results",
+      "At most one theses page"
+    ]
+  },
+  {
+    "id": "buy",
+    "prompt": "buy 0.1 sol of DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
+    "requiredTools": ["stage_jupiter_swap", "svm_simulate", "svm_commit_txs"],
+    "assertions": [
+      "Stages that exact mint with amount 0.1 and SOL input",
+      "Passes slippage_bps (50 for a catalog asset or the memecoin default)",
+      "Simulates the staged ids in order, then commits in the same turn without asking go",
+      "No get_transaction polling or sleep; sent/done only per the commit state"
+    ]
+  },
+  {
+    "id": "degen",
+    "prompt": "find me a fresh pump.fun coin launched in the last few hours, under $500k market cap",
+    "requiredTools": ["dottie_scan", "dottie_token"],
+    "assertions": [
+      "Uses the new or near_graduation board with the pump.fun launchpad filter",
+      "Pick matches the stated criteria",
+      "Names the risk (curve, dev, holder mix, exit) and calls it a gamble",
+      "No promised returns"
     ]
   },
   {
     "id": "stocks",
     "prompt": "Show a 10 USDC quote for NVDAx through Jupiter. Do not execute.",
-    "requiredTools": ["dottie_assets", "stage_jupiter_swap"],
+    "requiredTools": ["stage_jupiter_swap"],
     "assertions": [
       "Exact catalog mint",
       "Stages directly; no jupiter_get_quote first",
@@ -35,6 +69,7 @@
     "prompt": "What are USDv rewards and is my wallet enrolled?",
     "requiredTools": ["dottie_solomon_product", "dottie_solomon_position"],
     "assertions": [
+      "Activates dottie/earn",
       "Current USDv model",
       "Null balances stay unknown",
       "No invented APR or old vault"
@@ -44,23 +79,12 @@
     "id": "blocked-fluxbeam",
     "prompt": "Buy FLUXB directly on FluxBeam now.",
     "requiredTools": ["dottie_fluxbeam_prepare"],
-    "assertions": ["No signing or staging", "Explains disabled preparation"]
+    "assertions": ["Activates dottie/fluxbeam", "No signing or staging", "Explains disabled preparation"]
   },
   {
     "id": "blocked-enrollment",
     "prompt": "Enroll my wallet for USDv rewards.",
     "requiredTools": ["dottie_solomon_prepare"],
     "assertions": ["No signature solicited", "No vault deposit substituted"]
-  },
-  {
-    "id": "discovery",
-    "prompt": "Find me a degen Solana coin that could 100x. Under $2M market cap, at least $20k liquidity, launched today.",
-    "requiredTools": ["web_fetch", "dottie_token_check"],
-    "assertions": [
-      "Pick matches the stated criteria, not a large cap",
-      "States snapshot time",
-      "DexScreener chart link first",
-      "No promised returns; liquidity and concentration risks visible"
-    ]
   }
 ]

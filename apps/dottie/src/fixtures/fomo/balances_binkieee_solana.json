@@ -1,0 +1,74 @@
+{
+ "key": "binkieee",
+ "kind": "balances",
+ "capturedAt": "2026-11-08T12:47:33.736Z",
+ "count": 72,
+ "totalValueUsd": 481688.19,
+ "upstreamRows": 100,
+ "truncated": true,
+ "complete": false,
+ "chain": "solana",
+ "chainFiltered": true,
+ "holdings": [
+  {
+   "token": {
+    "symbol": "FLOAT",
+    "address": "Bv1a7cEj5aRnJQhMw4kRQqAFesMSd5LwcDnUzq52BMmr",
+    "networkId": 1399811149
+   },
+   "amount": 32329172.3,
+   "priceUsd": 0.012656084985463594,
+   "valueUsd": 409160.75,
+   "change24h": 111.4031,
+   "chain": "solana"
+  },
+  {
+   "token": {
+    "symbol": "PI",
+    "address": "Hy4iuJwuo9hAUMgMsNpFXANvKSnGmFFqcjBZuiCFpJCP",
+    "networkId": 1399811149
+   },
+   "amount": 24618764.98,
+   "priceUsd": 0.00040912894100925335,
+   "valueUsd": 10072.25,
+   "change24h": 54.4078,
+   "chain": "solana"
+  },
+  {
+   "token": {
+    "symbol": "CAPY",
+    "address": "DBPTU2oKLDHXQjAEJ3rZi8bUGmt2uxUbipgg6xmXoMqr",
+    "networkId": 1399811149
+   },
+   "amount": 33795371.59,
+   "priceUsd": 0.00022456998099127008,
+   "valueUsd": 7589.43,
+   "change24h": -7.1891,
+   "chain": "solana"
+  },
+  {
+   "token": {
+    "symbol": "PIRATE",
+    "address": "2StNe98imN7M6K341a7a4xvc8eNTvLCde5EugAKfLoat",
+    "networkId": 1399811149
+   },
+   "amount": 16604083.59,
+   "priceUsd": 0.00036355159844069884,
+   "valueUsd": 6036.44,
+   "change24h": -1.6175,
+   "chain": "solana"
+  },
+  {
+   "token": {
+    "symbol": "WHITE",
+    "address": "JATk4idqfAyU21F6w3xf2Rbyj9j8FnYxVWLMfoweqExh",
+    "networkId": 1399811149
+   },
+   "amount": 16578836.81,
+   "priceUsd": 0.0003279374539972667,
+   "valueUsd": 5436.82,
+   "change24h": 124.7524,
+   "chain": "solana"
+  }
+ ]
+}

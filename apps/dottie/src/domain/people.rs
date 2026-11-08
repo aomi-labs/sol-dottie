@@ -75,7 +75,20 @@ pub async fn people(rt: &Runtime, turn: &Turn, q: &Query<'_>) -> Result<Value, F
                     }
                 }
             };
-            view::fomo_trader(&user, positions.as_ref())
+            // The positions page has no chain filter; when it holds no
+            // Solana rows, one holdings read narrowed to Solana fills in.
+            let holdings = match &positions {
+                Some(p) if view::solana_positions(p) > 0 => None,
+                None if user["wallets"]["status"] == "resolving" => None,
+                _ => match fomo.solana_balances(&handle).await {
+                    Ok(b) => Some(b),
+                    Err(fail) => {
+                        turn.gap(format!("solana holdings unavailable: {}", fail.message()));
+                        None
+                    }
+                },
+            };
+            view::fomo_trader(&user, positions.as_ref(), holdings.as_ref())
         }
     })
 }
@@ -112,14 +125,23 @@ mod tests {
                 .iter()
                 .all(|t| pubkey(t["token"].as_str().unwrap()).is_ok())
         );
-        let trader = crate::view::compact(view::fomo_trader(
-            &fixture("trader_binkieee"),
-            Some(&fixture("positions_binkieee")),
-        ));
+        // Binkieee's first positions page is all BSC: the Solana holdings
+        // read fills in, and without it the reply says it's a summary.
+        let (user, positions) = (fixture("trader_binkieee"), fixture("positions_binkieee"));
+        assert_eq!(view::solana_positions(&positions), 0);
+        let holdings = fixture("balances_binkieee_solana");
+        let trader =
+            crate::view::compact(view::fomo_trader(&user, Some(&positions), Some(&holdings)));
         assert!(trader["solana_wallet"].is_string());
-        for p in trader["solana_positions"].as_array().into_iter().flatten() {
-            assert!(pubkey(p["token"].as_str().unwrap()).is_ok());
-        }
+        assert_eq!(trader["coverage"], "solana_holdings");
+        assert_eq!(trader["solana_rows"], 5);
+        assert_eq!(trader["holdings_truncated"], true);
+        let first = &trader["solana_holdings"][0];
+        assert_eq!(first["symbol"], "FLOAT");
+        assert!(pubkey(first["token"].as_str().unwrap()).is_ok());
+        let summary = crate::view::compact(view::fomo_trader(&user, Some(&positions), None));
+        assert_eq!(summary["coverage"], "top_token_summary");
+        assert_eq!(summary["solana_rows"], 0);
         let theses = view::fomo_theses("m", &fixture("theses_float"));
         let list = theses["theses"].as_array().unwrap();
         assert!(!list.is_empty() && list.len() <= 8);

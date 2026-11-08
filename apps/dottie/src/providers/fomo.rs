@@ -68,9 +68,17 @@ impl<'a> Fomo<'a> {
         self.get(format!("/v2/users/{handle}"), TRADER_TTL).await
     }
 
-    /// A trader's positions, one row per coin.
+    /// A trader's positions, one row per coin, every chain (the route has
+    /// no chain filter).
     pub async fn positions(self, handle: &str) -> Result<Value, Fail> {
         let path = format!("/v2/users/{handle}/positions?limit=20");
+        self.get(path, TRADER_TTL).await
+    }
+
+    /// A trader's Solana holdings snapshot. Fomo caps it near 100 rows
+    /// with no paging; `truncated` says when it did.
+    pub async fn solana_balances(self, handle: &str) -> Result<Value, Fail> {
+        let path = format!("/v2/users/{handle}/balances?chain=solana");
         self.get(path, TRADER_TTL).await
     }
 

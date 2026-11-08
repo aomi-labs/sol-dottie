@@ -62,7 +62,7 @@ impl DynAomiTool for People {
     type App = DottieApp;
     type Args = PeopleArgs;
     const NAME: &'static str = "dottie_people";
-    const DESCRIPTION: &'static str = "Real traders from Fomo. leaders: top traders by PnL (24h/7d/30d) with their Solana wallet and top coins. trader: one handle's verified wallet, PnL and Solana positions. theses: what holders wrote about a mint, most liked, with each writer's position and PnL. owner: which trader owns a wallet. trending: coins Fomo users trade now or hold most. Each call spends credits: one call per question.";
+    const DESCRIPTION: &'static str = "Real traders from Fomo. leaders: top traders by PnL (24h/7d/30d) with their Solana wallet and top coins. trader: one handle's verified wallet, PnL and Solana positions (or holdings; coverage top_token_summary means neither had Solana rows). theses: what holders wrote about a mint, most liked, with each writer's position and PnL. owner: which trader owns a wallet. trending: coins Fomo users trade now or hold most. Each call spends credits: one call per question.";
 
     fn run(app: &DottieApp, args: PeopleArgs, ctx: DynToolCallCtx) -> Result<Value, String> {
         run(app, &ctx, Lane::Chat, async |rt, turn| {

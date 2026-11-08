@@ -60,7 +60,7 @@ pub fn signals(feed: &Feed, window_min: i64) -> Value {
     })
 }
 
-/// "professor @0xossalivan (kol, 0x…): bought $535, sold $535, 55m ago, out"
+/// "professor @ossalivan (kol, <full wallet>): bought $535, sold $535, 55m ago, out"
 /// ("out" = their last trade closed the position).
 fn buyer(b: &Buyer) -> Value {
     let name: String = b
@@ -98,13 +98,15 @@ fn buyer(b: &Buyer) -> Value {
     ))
 }
 
-/// 0x1234…abcd; anything that isn't a full address is shown as is.
+/// 7xKX…gAsU; anything that isn't a full Solana address is shown as is.
 fn short_wallet(wallet: &str) -> String {
     match (
-        wallet.get(..6),
+        wallet.get(..4),
         wallet.get(wallet.len().saturating_sub(4)..),
     ) {
-        (Some(head), Some(tail)) if wallet.len() == 42 => format!("{head}…{tail}"),
+        (Some(head), Some(tail)) if crate::providers::pubkey(wallet).is_ok() => {
+            format!("{head}…{tail}")
+        }
         _ => wallet.to_string(),
     }
 }
@@ -347,7 +349,17 @@ pub fn fomo_tokens(raw: &Value) -> Value {
     })
 }
 
-pub fn fomo_trader(user: &Value, positions: Option<&Value>) -> Value {
+/// Solana rows on a positions page.
+pub fn solana_positions(positions: &Value) -> usize {
+    positions["trades"]
+        .as_array()
+        .map_or(0, |t| t.iter().filter(|p| solana(p)).count())
+}
+
+/// A trader: their PnL, Solana positions when the positions page has any,
+/// else their Solana holdings. With neither, `coverage` says the reply is
+/// only the profile's top-token summary and `solana_rows` is 0.
+pub fn fomo_trader(user: &Value, positions: Option<&Value>, holdings: Option<&Value>) -> Value {
     let rows: Vec<Value> = positions
         .and_then(|p| p["trades"].as_array())
         .into_iter()
@@ -367,6 +379,26 @@ pub fn fomo_trader(user: &Value, positions: Option<&Value>) -> Value {
             })
         })
         .collect();
+    let held: Vec<Value> = holdings
+        .and_then(|h| h["holdings"].as_array())
+        .into_iter()
+        .flatten()
+        .filter(|h| solana(h) || solana(&h["token"]))
+        .take(8)
+        .map(|h| {
+            json!({
+                "symbol": label(h["token"]["symbol"].as_str(), 20),
+                "token": h["token"]["address"],
+                "value_usd": usd(num(&h["valueUsd"])),
+                "change_24h_pct": pct(num(&h["change24h"])),
+            })
+        })
+        .collect();
+    let coverage = match (rows.is_empty(), held.is_empty()) {
+        (false, _) => "solana_positions",
+        (true, false) => "solana_holdings",
+        (true, true) => "top_token_summary",
+    };
     json!({
         "mode": "trader",
         "handle": handle(user),
@@ -378,7 +410,11 @@ pub fn fomo_trader(user: &Value, positions: Option<&Value>) -> Value {
         "wallet_verified": user["wallets"]["verified"],
         "wallet_status": user["wallets"]["status"],
         "top_solana_tokens": top_tokens(user),
+        "coverage": coverage,
+        "solana_rows": rows.len() + held.len(),
         "solana_positions": rows,
+        "solana_holdings": held,
+        "holdings_truncated": holdings.and_then(|h| h["truncated"].as_bool()).filter(|t| *t && !held.is_empty()),
     })
 }
 

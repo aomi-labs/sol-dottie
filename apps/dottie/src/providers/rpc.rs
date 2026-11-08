@@ -11,7 +11,13 @@ use std::time::Duration;
 const PUBLIC_GAP: Duration = Duration::from_millis(120);
 const BALANCE_TTL: Duration = Duration::from_secs(10);
 /// Mint decimals and program never change.
-const MINT_TTL: Duration = Duration::from_secs(86_400);
+const MINT_ID_TTL: Duration = Duration::from_secs(86_400);
+/// Authorities, the transfer fee and extensions can change at any time.
+const MINT_STATE_TTL: Duration = Duration::from_secs(60);
+/// Signatures for an address; a new trade lands within seconds.
+const SIGNATURES_TTL: Duration = Duration::from_secs(10);
+/// Signatures read per token account: enough for a round, bounded.
+pub const MAX_SIGNATURES: usize = 50;
 /// A confirmed transaction never changes.
 const TX_TTL: Duration = Duration::from_secs(3600);
 const SYSTEM_PROGRAM: &str = "11111111111111111111111111111111";
@@ -29,6 +35,21 @@ impl Holding {
     pub fn amount(&self) -> f64 {
         self.raw as f64 / 10f64.powi(i32::from(self.decimals))
     }
+}
+
+/// What never changes about a mint.
+#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct MintId {
+    pub decimals: u8,
+    pub token_2022: bool,
+}
+
+/// A confirmed signature that touched an address.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Signature {
+    pub signature: String,
+    pub slot: u64,
+    pub block_time: Option<i64>,
 }
 
 /// A mint account: what a token is on chain.
@@ -121,16 +142,74 @@ impl<'a> Rpc<'a> {
             .fold(0u128, u128::saturating_add))
     }
 
-    /// The mint account. A wallet or a program is `NotFound`, said for the user.
+    /// The mint account for research, at most a minute old. A wallet or a
+    /// program is `NotFound`, said for the user.
     pub async fn mint(self, mint: &str) -> Result<Mint, Fail> {
-        let value = self
-            .call(
-                "getAccountInfo",
-                json!([mint, {"encoding": "jsonParsed", "commitment": "confirmed"}]),
-                MINT_TTL,
-            )
-            .await?;
+        self.read_mint(mint, false).await
+    }
+
+    /// The mint account read now, for a trade. When the read fails the
+    /// caller gets the failure, never an older answer.
+    pub async fn mint_live(self, mint: &str) -> Result<Mint, Fail> {
+        self.read_mint(mint, true).await
+    }
+
+    /// Decimals and program, cached a day: they never change.
+    pub async fn mint_id(self, mint: &str) -> Result<MintId, Fail> {
+        let key = format!("mint-id:{mint}");
+        if let Some(hit) = self.rt.cache.fresh(&key)
+            && let Ok(id) = serde_json::from_value(hit)
+        {
+            return Ok(id);
+        }
+        let m = self.mint(mint).await?;
+        let id = MintId {
+            decimals: m.decimals,
+            token_2022: m.token_2022,
+        };
+        if let Ok(value) = serde_json::to_value(id) {
+            self.rt.cache.put(key, value, MINT_ID_TTL);
+        }
+        Ok(id)
+    }
+
+    async fn read_mint(self, mint: &str, live: bool) -> Result<Mint, Fail> {
+        let params = json!([mint, {"encoding": "jsonParsed", "commitment": "confirmed"}]);
+        let request = self.request("getAccountInfo", &params, MINT_STATE_TTL);
+        let request = if live {
+            request.uncached()
+        } else {
+            request.live_only()
+        };
+        let value = self.send(request, "getAccountInfo", params).await?;
         parse_mint(&value["value"])
+    }
+
+    /// Confirmed, successful signatures for an address, newest first, at
+    /// most [`MAX_SIGNATURES`]. `live` skips the short cache, for a trade
+    /// that just landed.
+    pub async fn signatures(self, address: &str, live: bool) -> Result<Vec<Signature>, Fail> {
+        let params = json!([address, {"limit": MAX_SIGNATURES, "commitment": "confirmed"}]);
+        let request = self.request("getSignaturesForAddress", &params, SIGNATURES_TTL);
+        let request = if live { request.uncached() } else { request };
+        let value = self
+            .send(request, "getSignaturesForAddress", params)
+            .await?;
+        let rows = value
+            .as_array()
+            .ok_or_else(|| Fail::bad(Source::Rpc, "signatures without a list"))?;
+        Ok(rows
+            .iter()
+            .filter(|r| r["err"].is_null())
+            .filter_map(|r| {
+                Some(Signature {
+                    signature: r["signature"].as_str()?.to_string(),
+                    slot: r["slot"].as_u64()?,
+                    block_time: r["blockTime"].as_i64(),
+                })
+            })
+            .take(MAX_SIGNATURES)
+            .collect())
     }
 
     /// A confirmed transaction, parsed, v0 included.
@@ -165,13 +244,21 @@ impl<'a> Rpc<'a> {
     }
 
     async fn call(self, method: &str, params: Value, ttl: Duration) -> Result<Value, Fail> {
-        let url = self.turn.rpc_url().to_string();
-        let cost = if url == crate::runtime::DEFAULT_RPC {
+        let request = self.request(method, &params, ttl);
+        self.send(request, method, params).await
+    }
+
+    fn request(self, method: &str, params: &Value, ttl: Duration) -> Request {
+        let cost = if self.turn.rpc_url() == crate::runtime::DEFAULT_RPC {
             Cost::Paced(Source::Rpc, PUBLIC_GAP)
         } else {
             Cost::Free
         };
-        let request = Request::new(Source::Rpc, format!("rpc:{method}:{params}"), cost, ttl);
+        Request::new(Source::Rpc, format!("rpc:{method}:{params}"), cost, ttl)
+    }
+
+    async fn send(self, request: Request, method: &str, params: Value) -> Result<Value, Fail> {
+        let url = self.turn.rpc_url().to_string();
         let body = json!({"jsonrpc": "2.0", "id": 1, "method": method, "params": params});
         self.rt
             .fetch(self.turn, request, || async {
@@ -258,6 +345,11 @@ pub fn parse_mint(account: &Value) -> Result<Mint, Fail> {
         .as_u64()
         .and_then(|d| u8::try_from(d).ok())
         .ok_or_else(|| Fail::bad(Source::Rpc, "mint without decimals"))?;
+    if decimals > crate::domain::amount::MAX_DECIMALS {
+        return Err(Fail::Invalid(format!(
+            "this token has {decimals} decimals, which is unsupported"
+        )));
+    }
     let text = |field: &str| info[field].as_str().map(str::to_string);
     let extensions = info["extensions"].as_array().cloned().unwrap_or_default();
     let transfer_fee_bps = extensions

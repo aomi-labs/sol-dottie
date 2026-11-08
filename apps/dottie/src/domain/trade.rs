@@ -71,15 +71,34 @@ pub fn pay_with(
     Ok(pay)
 }
 
-/// The trade skill's defaults: 0.5% for base assets, 3% for memecoins
-/// with over $50k liquidity, 5% at or below that or on a curve.
-pub fn slippage_bps(id: &Identity) -> u32 {
-    if id.base {
+/// The host's Jupiter cap. A higher tolerance is refused, never clipped.
+pub const MAX_SLIPPAGE_BPS: u32 = 500;
+
+/// Dottie's defaults, so the model never works them out: 0.5% for base
+/// assets, 3% for memecoins with over $50k liquidity, 5% at or below that,
+/// with liquidity unknown, or on a curve.
+pub fn default_slippage_bps(base: bool, stage: Stage, liquidity_usd: Option<f64>) -> u32 {
+    if base {
         50
-    } else if id.stage != Stage::Curve && id.liquidity_usd.is_some_and(|l| l > 50_000.0) {
+    } else if stage != Stage::Curve && liquidity_usd.is_some_and(|l| l > 50_000.0) {
         300
     } else {
         500
+    }
+}
+
+pub fn slippage_bps(id: &Identity) -> u32 {
+    default_slippage_bps(id.base, id.stage, id.liquidity_usd)
+}
+
+/// The user's own tolerance when they gave one, else the default.
+pub fn chosen_slippage(requested: Option<u32>, default: u32) -> Result<u32, Fail> {
+    match requested {
+        None => Ok(default),
+        Some(bps) if (1..=MAX_SLIPPAGE_BPS).contains(&bps) => Ok(bps),
+        Some(bps) => Err(Fail::Invalid(format!(
+            "slippage_bps {bps} is outside 1–{MAX_SLIPPAGE_BPS}, the host's cap; never widen or clip it silently"
+        ))),
     }
 }
 
@@ -96,6 +115,13 @@ pub fn warnings(
         }
         if let Some(tax) = s.sell_tax_pct.filter(|t| *t > 10.0) {
             out.push(format!("sell tax is {tax}%"));
+        }
+        // Set only by a mint read; a failed read stays unknown, never stale.
+        if s.transfer_fee_pct.is_none() {
+            out.push(
+                "the mint account couldn't be read just now; its transfer fee, authorities and extensions are unknown"
+                    .into(),
+            );
         }
         if let Some(fee) = s.transfer_fee_pct.filter(|f| *f > 0.0) {
             out.push(format!(
@@ -216,7 +242,7 @@ pub async fn buy(
         }
         let (screen, mint, trip) = tokio::join!(
             Gmgn::new(rt, turn).live().security(&id.token),
-            rpc.mint(&id.token),
+            rpc.mint_live(&id.token),
             Exits::new(rt, turn).round_trip(&id.token, &sol_size, bps)
         );
         let (result, loss) = match trip {
@@ -373,6 +399,20 @@ mod tests {
     }
 
     #[test]
+    fn slippage_defaults_follow_liquidity_and_curve_and_respect_the_cap() {
+        let meme = |l| default_slippage_bps(false, Stage::Pool, l);
+        assert_eq!(meme(None), 500);
+        assert_eq!(meme(Some(50_000.0)), 500);
+        assert_eq!(meme(Some(50_001.0)), 300);
+        assert_eq!(default_slippage_bps(false, Stage::Curve, Some(1e9)), 500);
+        assert_eq!(default_slippage_bps(true, Stage::Pool, None), 50);
+        assert_eq!(chosen_slippage(None, 300).unwrap(), 300);
+        assert_eq!(chosen_slippage(Some(120), 300).unwrap(), 120);
+        assert!(chosen_slippage(Some(0), 300).is_err());
+        assert!(chosen_slippage(Some(501), 300).is_err());
+    }
+
+    #[test]
     fn buy_warnings_preserve_all_findings_without_claiming_a_trap() {
         let clean = Security {
             honeypot: Some(false),
@@ -380,9 +420,15 @@ mod tests {
             sell_tax_pct: Some(1.0),
             mint_renounced: Some(true),
             freeze_renounced: Some(true),
+            transfer_fee_pct: Some(0.0),
             ..Security::default()
         };
         assert!(warnings(Some(&clean), ExitResult::Ok, Some(3.0)).is_empty());
+        let unread = Security {
+            transfer_fee_pct: None,
+            ..clean.clone()
+        };
+        assert!(warnings(Some(&unread), ExitResult::Ok, None)[0].contains("unknown"));
         assert!(!warnings(None, ExitResult::Ok, Some(3.0)).is_empty());
         let taxed = Security {
             sell_tax_pct: Some(25.0),

@@ -5,7 +5,7 @@
  {"tool":"dottie_find","args":{"query":"bonk"}},
  {"tool":"dottie_token","args":{"token":"DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263"}},
  {"tool":"dottie_token","args":{"token":"HsXo7d9bFQZTbhAquXJBmykCJoPnzZVnx92GNrZTpump"}},
- {"tool":"dottie_token","args":{"token":"HsXo7d9bFQZTbhAquXJBmykCJoPnzZVnx92GNrZTpump","mode":"trade","sol_amount":"0.1","slippage_pct":5}},
+ {"tool":"dottie_token","args":{"token":"HsXo7d9bFQZTbhAquXJBmykCJoPnzZVnx92GNrZTpump","mode":"trade","sol_amount":"0.1"}},
  {"tool":"dottie_holders","args":{"token":"HsXo7d9bFQZTbhAquXJBmykCJoPnzZVnx92GNrZTpump","view":"dev"}},
  {"tool":"dottie_check","args":{"token":"HsXo7d9bFQZTbhAquXJBmykCJoPnzZVnx92GNrZTpump"}},
  {"tool":"dottie_wallet","args":{"wallet":"9St6ETbe3CFitw6UNSd8kg7kZ6STXy71wEGiERqQj89U"}},

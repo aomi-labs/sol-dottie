@@ -145,11 +145,13 @@ pub fn round_trip(token: &str, r: &RoundTrip, sol_usd: Option<f64>) -> Value {
     })
 }
 
-pub fn sale(token: &str, s: &Sale) -> Value {
-    json!({
+pub fn sale(token: &str, s: &Sale, slippage_bps: u32) -> Value {
+    let tokens = amount::format(s.tokens_in, s.decimals);
+    let mut out = json!({
         "token": token,
         "mode": "sell",
-        "tokens_in": amount::format(s.tokens_in, s.decimals),
+        "tokens_in": tokens,
+        "slippage_bps": slippage_bps,
         "value_usd": usd(s.value_usd),
         "sol_out": s.sol_out.map(|o| sig(o, 4)),
         "sol_min_out": s.sol_min_out.map(|o| sig(o, 4)),
@@ -157,5 +159,9 @@ pub fn sale(token: &str, s: &Sale) -> Value {
         "result": s.result,
         "sell": leg(&s.sell),
         "note": "a Jupiter quote, not a fill; loss_pct is SOL out vs the tokens' value at the current price",
-    })
+    });
+    if s.sell.is_ok() {
+        out["stage"] = super::direct::stage(token, "SOL", &tokens, slippage_bps);
+    }
+    out
 }

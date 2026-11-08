@@ -1,5 +1,7 @@
 use super::{address, run};
 use crate::domain::exit::{Exits, Size};
+use crate::domain::token::identity;
+use crate::domain::trade;
 use crate::runtime::{DottieApp, Fail, Lane};
 use aomi_sdk::schemars::JsonSchema;
 use aomi_sdk::{DynAomiTool, DynToolCallCtx};
@@ -28,8 +30,8 @@ pub struct ExitArgs {
     pub token_amount: Option<String>,
     /// Size in USD instead, converted at the current price. null = not used.
     pub usd_amount: Option<f64>,
-    /// Slippage tolerance in percent for the quotes, at most 10. null = 5.
-    pub slippage_pct: Option<f64>,
+    /// Only a tolerance the user stated, in bps (1–500, the host cap). null = Dottie's default for this coin. A sell's `stage` carries it to stage_jupiter_swap.
+    pub slippage_bps: Option<u32>,
 }
 
 pub struct Exit;
@@ -38,13 +40,13 @@ impl DynAomiTool for Exit {
     type App = DottieApp;
     type Args = ExitArgs;
     const NAME: &'static str = "dottie_exit";
-    const DESCRIPTION: &'static str = "Can a size get out? Live Jupiter quotes, the router the host trades through. round_trip buys with SOL and sells straight back; sell quotes a token amount back to SOL. Both report loss_pct and a result (ok, thin above 10% loss, trap over 50% lost, no_sell_route), each leg's route or why it failed. Quotes, not fills.";
+    const DESCRIPTION: &'static str = "Can a size get out? Live Jupiter quotes, the router the host trades through. round_trip buys with SOL and sells straight back; sell quotes a token amount back to SOL at the coin's default slippage (or the user's slippage_bps), and its `stage` is stage_jupiter_swap's exact args: pass it as is. Both report loss_pct and a result (ok, thin above 10% loss, trap over 50% lost, no_sell_route), each leg's route or why it failed. Quotes, not fills.";
 
     fn run(app: &DottieApp, args: ExitArgs, ctx: DynToolCallCtx) -> Result<Value, String> {
         run(app, &ctx, Lane::Chat, async |rt, turn| {
             let token = address(&args.token)?;
-            let slippage =
-                (args.slippage_pct.unwrap_or(5.0).clamp(0.1, 10.0) * 100.0).round() as u32;
+            let default = trade::slippage_bps(&identity(rt, turn, &token).await?);
+            let slippage = trade::chosen_slippage(args.slippage_bps, default)?;
             let exits = Exits::new(rt, turn);
             let size = match (&args.sol_amount, &args.token_amount, args.usd_amount) {
                 (Some(sol), _, _) => Size::Sol(sol.clone()),
@@ -68,7 +70,7 @@ impl DynAomiTool for Exit {
                 }
                 Mode::Sell => {
                     let sale = exits.sell_sized(&token, size, slippage).await?;
-                    Ok(crate::view::market::sale(&token, &sale))
+                    Ok(crate::view::market::sale(&token, &sale, slippage))
                 }
             }
         })

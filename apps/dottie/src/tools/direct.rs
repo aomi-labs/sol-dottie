@@ -132,10 +132,7 @@ impl DynAomiTool for Buy {
             let id = id?;
             let mut settings = settings?;
             if let Some(bps) = args.slippage_bps {
-                if !(1..=1000).contains(&bps) {
-                    return Err(Fail::Invalid("slippage_bps must be 1–1000".into()));
-                }
-                settings.slippage_bps = Some(bps);
+                settings.slippage_bps = Some(trade::chosen_slippage(Some(bps), bps)?);
             }
             let Some(size) = size else {
                 return Ok(view::how_much(&id, &settings, false));

@@ -268,7 +268,7 @@ impl<'a> Exits<'a> {
         if let Some(asset) = super::market::known(token) {
             return Ok(asset.decimals);
         }
-        Ok(Rpc::new(self.rt, self.turn).mint(token).await?.decimals)
+        Ok(Rpc::new(self.rt, self.turn).mint_id(token).await?.decimals)
     }
 }
 

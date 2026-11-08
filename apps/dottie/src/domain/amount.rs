@@ -1,8 +1,15 @@
 //! Exact token amounts, and sizes as people type them. A decimal the token
 //! can't represent is an error, never a rounding.
+
+/// More decimals than any real mint uses; a u64 amount has at most 20 digits.
+pub const MAX_DECIMALS: u8 = 30;
+
 /// Whole-unit decimal string ("0.05") to atomic units. SPL amounts are
 /// u64; anything past that is an error.
 pub fn from_decimal(value: &str, decimals: u8) -> Result<u128, String> {
+    if decimals > MAX_DECIMALS {
+        return Err(format!("a token with {decimals} decimals is unsupported"));
+    }
     let value = value.trim();
     let (whole, fractional) = value.split_once('.').unwrap_or((value, ""));
     let plain = |s: &str| s.bytes().all(|b| b.is_ascii_digit());
@@ -27,18 +34,16 @@ pub fn from_decimal(value: &str, decimals: u8) -> Result<u128, String> {
         .ok_or_else(|| "amount is too large for a Solana token".to_string())
 }
 
-/// Atomic units back to a whole-unit decimal string.
+/// Atomic units back to a whole-unit decimal string, by placing the point
+/// in the digits, so any `u8` of decimals works.
 pub fn format(value: u128, decimals: u8) -> String {
-    if decimals == 0 {
-        return value.to_string();
+    let width = decimals as usize + 1;
+    let digits = format!("{value:0>width$}");
+    let (whole, frac) = digits.split_at(digits.len() - decimals as usize);
+    match frac.trim_end_matches('0') {
+        "" => whole.to_string(),
+        frac => format!("{whole}.{frac}"),
     }
-    let scale = 10u128.pow(decimals as u32);
-    let (whole, rem) = (value / scale, value % scale);
-    if rem == 0 {
-        return whole.to_string();
-    }
-    let frac = format!("{:0>width$}", rem, width = decimals as usize);
-    format!("{whole}.{}", frac.trim_end_matches('0'))
 }
 
 /// A size as a person types it after /buy or /sell, or in a reply.
@@ -148,6 +153,23 @@ mod tests {
         assert!(from_decimal("1.", 6).is_err());
         assert_eq!(format(from_decimal("1.2345", 6).unwrap(), 6), "1.2345");
         assert!(from_decimal("99999999999999999999", 9).is_err());
+    }
+
+    #[test]
+    fn every_u8_of_decimals_formats_or_errors_without_panicking() {
+        for decimals in 0..=u8::MAX {
+            let max = format(u128::from(u64::MAX), decimals);
+            let back = from_decimal(&max, decimals);
+            if decimals <= MAX_DECIMALS {
+                assert_eq!(back, Ok(u128::from(u64::MAX)), "{decimals}");
+            } else {
+                assert!(back.is_err(), "{decimals}");
+            }
+            assert_eq!(format(0, decimals), "0");
+        }
+        assert_eq!(format(1, 39), format!("0.{}1", "0".repeat(38)));
+        assert_eq!(format(1_500_000, 6), "1.5");
+        assert_eq!(format(7, 0), "7");
     }
 
     #[test]

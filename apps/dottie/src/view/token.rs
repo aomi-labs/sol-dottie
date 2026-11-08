@@ -1,6 +1,7 @@
 //! Token-shaped replies: the card, the watcher's flat numbers, board rows
 //! and search candidates.
 use super::{int, label, pct, price, put_span, usd};
+use crate::domain::amount;
 use crate::domain::boards::Listing;
 use crate::domain::exit::{Probe, RoundTrip};
 use crate::domain::find::Candidate;
@@ -142,6 +143,15 @@ pub fn trade(
         "exit_check".into(),
         super::market::round_trip(&s.token, trip, sol_usd),
     );
+    if trip.buy.is_ok()
+        && let Ok(lamports) = amount::from_decimal(&trip.sol_in, 9)
+    {
+        let sol = amount::format(lamports, 9);
+        out.insert(
+            "stage".into(),
+            super::direct::stage("SOL", &s.token, &sol, slippage_bps),
+        );
+    }
     if let Some(real) = lookalike(&s.token) {
         out.insert(
             "warning".into(),

@@ -35,7 +35,7 @@ pub struct SettingsSetArgs {
     pub sell: Option<Vec<String>>,
     /// auto (SOL; USDC for dollar buys it covers), sol or usdc. null = unchanged.
     pub pay: Option<Pay>,
-    /// Default slippage for quick trades, 1–1000 bps; 0 = Dottie's per-coin defaults. null = unchanged.
+    /// Default slippage for quick trades, 1–500 bps (the host cap); 0 = Dottie's per-coin defaults. null = unchanged.
     pub slippage_bps: Option<u32>,
 }
 

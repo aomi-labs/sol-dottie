@@ -132,10 +132,15 @@ fn fresh_card_reads_the_launch_and_dev() {
 
 #[test]
 fn trade_mode_combines_security_and_the_exact_exit_without_research() {
-    let out =
-        call::<Token>(json!({"token":FRESH,"mode":"trade","sol_amount":"0.1","slippage_pct":5}));
+    let out = call::<Token>(json!({"token":FRESH,"mode":"trade","sol_amount":"0.1"}));
     assert_eq!(out["mode"], "trade");
-    assert_eq!(out["slippage_bps"], 500);
+    // The coin's default is computed here and carried into the stage args.
+    let bps = out["slippage_bps"].as_u64().unwrap();
+    assert!(bps == 300 || bps == 500, "{bps}");
+    assert_eq!(
+        out["stage"],
+        json!({"input_token":"SOL","output_token":FRESH,"amount":"0.1","slippage_bps":bps})
+    );
     assert_eq!(out["exit_check"]["sol_in"], "0.1");
     assert!(out["checks_passed"].is_boolean());
     for field in ["dev", "socials", "ath_usd", "buy_1h_usd", "rugcheck"] {
@@ -219,8 +224,8 @@ fn trade_validates_size_and_slippage_before_any_reads() {
         json!({"sol_amount":"-1"}),
         json!({"sol_amount":"0.1","usd_amount":1}),
         json!({"usd_amount":0}),
-        json!({"sol_amount":"0.1","slippage_pct":0}),
-        json!({"sol_amount":"0.1","slippage_pct":11}),
+        json!({"sol_amount":"0.1","slippage_bps":0}),
+        json!({"sol_amount":"0.1","slippage_bps":501}),
     ] {
         let mut args = json!({"token":FRESH,"mode":"trade"});
         args.as_object_mut()
@@ -231,4 +236,7 @@ fn trade_validates_size_and_slippage_before_any_reads() {
             .value;
         assert_eq!(out["error"]["code"], "INVALID_ARGUMENT", "{out}");
     }
+    // Percent slippage is gone: the stage carries basis points only.
+    let pct = json!({"token":FRESH,"mode":"trade","sol_amount":"0.1","slippage_pct":5});
+    assert!(run_tool::<Token>(&app, pct, TestCtxBuilder::new("dottie_token").build()).is_err());
 }

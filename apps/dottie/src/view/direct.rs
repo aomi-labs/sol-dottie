@@ -187,18 +187,24 @@ pub fn how_much(id: &Identity, settings: &Settings, sell: bool) -> Value {
     })
 }
 
-/// The host's Jupiter fast path, with its exact argument names: it
-/// quotes, builds and stages the swap; the host then simulates and commits
-/// exactly what it staged.
+/// `stage_jupiter_swap`'s arguments, with the host's exact names. The
+/// model passes this object as is, so the tolerance it was quoted at is
+/// the one staged.
+pub fn stage(input: &str, output: &str, amount: &str, slippage_bps: u32) -> Value {
+    json!({
+        "input_token": input,
+        "output_token": output,
+        "amount": amount,
+        "slippage_bps": slippage_bps,
+    })
+}
+
+/// The host's Jupiter fast path: it quotes, builds and stages the swap;
+/// the host then simulates and commits exactly what it staged.
 fn tx(t: &Trade) -> Value {
     json!({
         "tool": "stage_jupiter_swap",
-        "args": {
-            "input_token": t.input,
-            "output_token": t.output,
-            "amount": t.amount,
-            "slippage_bps": t.slippage_bps,
-        }
+        "args": stage(&t.input, &t.output, &t.amount, t.slippage_bps),
     })
 }
 

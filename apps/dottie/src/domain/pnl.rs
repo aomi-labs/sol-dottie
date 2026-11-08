@@ -78,7 +78,7 @@ pub async fn card(
     .into();
     let decimals = match super::market::known(token) {
         Some(asset) => Ok(asset.decimals),
-        None => rpc.mint(token).await.map(|m| m.decimals),
+        None => rpc.mint_id(token).await.map(|m| m.decimals),
     };
     let bought = settlement::token_amount(settled.bought, decimals.as_ref().ok().copied());
     let sold = settlement::token_amount(settled.sold, decimals.as_ref().ok().copied());

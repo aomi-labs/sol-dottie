@@ -43,7 +43,7 @@ impl Default for Settings {
 
 impl Settings {
     /// Checked and spelled one way: 1–3 buys of 0.001–100 SOL or
-    /// $1–$10,000, 1–3 sell percents, slippage up to 10%.
+    /// $1–$10,000, 1–3 sell percents, slippage up to the host cap of 5%.
     pub fn checked(self) -> Result<Self, String> {
         let list = |items: &[String], what: &str| {
             if (1..=3).contains(&items.len()) {
@@ -80,8 +80,11 @@ impl Settings {
                 _ => Err(format!("\"{s}\" isn't a sell percent from 1% to 100%.")),
             })
             .collect::<Result<_, _>>()?;
-        if self.slippage_bps.is_some_and(|b| !(1..=1000).contains(&b)) {
-            return Err("Slippage goes from 0.01% to 10%.".into());
+        if self
+            .slippage_bps
+            .is_some_and(|b| !(1..=super::trade::MAX_SLIPPAGE_BPS).contains(&b))
+        {
+            return Err("Slippage goes from 0.01% to 5%.".into());
         }
         Ok(Self { buy, sell, ..self })
     }
@@ -192,7 +195,7 @@ mod tests {
     #[test]
     fn invalid_saved_slippage_cannot_be_replaced_by_a_wider_default() {
         use serde_json::json;
-        assert!(Settings::from_saved(json!({"slippage_bps": 1001})).is_err());
+        assert!(Settings::from_saved(json!({"slippage_bps": 501})).is_err());
         assert!(Settings::from_saved(json!({"slippage_bps": "50"})).is_err());
         assert!(Settings::from_saved(json!(null)).is_err());
         assert_eq!(
@@ -229,7 +232,7 @@ mod tests {
         assert!(bad(|s| s.buy = vec!["500 sol".into()]));
         assert!(bad(|s| s.buy = vec!["25%".into()]));
         assert!(bad(|s| s.sell = vec!["$5".into()]));
-        assert!(bad(|s| s.slippage_bps = Some(1500)));
+        assert!(bad(|s| s.slippage_bps = Some(501)));
         let doc: Settings = serde_json::from_value(serde_json::json!({ "pay": "usdc" })).unwrap();
         assert_eq!((doc.pay, doc.buy.len()), (Pay::Usdc, 3));
     }

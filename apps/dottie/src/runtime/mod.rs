@@ -75,6 +75,8 @@ pub struct Request {
     pub ttl: Duration,
     /// Whether an older answer may stand in when the provider fails.
     pub stale_ok: bool,
+    /// Whether a fresh cached answer may be served instead of a new read.
+    pub reuse: bool,
 }
 
 impl Request {
@@ -100,6 +102,7 @@ impl Request {
             cost,
             ttl,
             stale_ok: true,
+            reuse: true,
         }
     }
 
@@ -107,6 +110,12 @@ impl Request {
     pub fn live_only(mut self) -> Self {
         self.stale_ok = false;
         self
+    }
+
+    /// Always read now; the answer still refreshes the cache for others.
+    pub fn uncached(mut self) -> Self {
+        self.reuse = false;
+        self.live_only()
     }
 }
 
@@ -199,7 +208,9 @@ impl Runtime {
                 None => Ok(value),
             };
         }
-        if let Some(Hit::Fresh(value)) = self.cache.get(&req.key) {
+        if req.reuse
+            && let Some(Hit::Fresh(value)) = self.cache.get(&req.key)
+        {
             turn.trace(
                 req.source,
                 req.operation(),
@@ -235,7 +246,9 @@ impl Runtime {
         Fut: Future<Output = Result<Value, Fail>>,
     {
         // Someone else may have fetched it, or just failed, while we waited.
-        if let Some(Hit::Fresh(value)) = self.cache.get(&req.key) {
+        if req.reuse
+            && let Some(Hit::Fresh(value)) = self.cache.get(&req.key)
+        {
             return Ok(value);
         }
         if let Some(fail) = self.recent_failure(&req.key) {

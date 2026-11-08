@@ -378,10 +378,12 @@ pub async fn snapshot(
             }
         },
         async {
-            if deep {
-                Some(Rpc::new(rt, turn).mint(token).await)
-            } else {
-                None
+            let rpc = Rpc::new(rt, turn);
+            match depth {
+                Depth::Basic => None,
+                // A trade reads the mutable fields now, never from cache.
+                Depth::Trade => Some(rpc.mint_live(token).await),
+                Depth::Card => Some(rpc.mint(token).await),
             }
         },
         async {
@@ -450,7 +452,7 @@ pub struct Identity {
 /// program) is `NotFound`, said for the user.
 pub async fn identity(rt: &Runtime, turn: &Turn, token: &str) -> Result<Identity, Fail> {
     let (mint, info) = tokio::join!(
-        Rpc::new(rt, turn).mint(token),
+        Rpc::new(rt, turn).mint_id(token),
         Gmgn::new(rt, turn).token_info(token)
     );
     let catalog = known(token);

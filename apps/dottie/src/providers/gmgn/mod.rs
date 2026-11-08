@@ -431,6 +431,7 @@ fn unwrap_response(status: u16, text: &str, reset_header: Option<i64>) -> Result
         || error.starts_with("RATE_LIMIT")
         || error == "ERROR_RATE_LIMIT_BLOCKED";
     if limited {
+        let banned = error.contains("BAN") || error.contains("BLOCKED");
         let reset = body
             .get("reset_at")
             .and_then(Value::as_i64)
@@ -438,7 +439,8 @@ fn unwrap_response(status: u16, text: &str, reset_header: Option<i64>) -> Result
             .unwrap_or(crate::view::now() + 60);
         return Err(Fail::RateLimited {
             source: Source::Gmgn,
-            retry_after_s: (reset - crate::view::now() + 1).max(2) as u64,
+            // A ban or block never counts as a short 429, whatever its reset says.
+            retry_after_s: (reset - crate::view::now() + 1).max(if banned { 60 } else { 2 }) as u64,
         });
     }
     if body.get("code").and_then(Value::as_i64) != Some(0) {
@@ -547,6 +549,16 @@ mod tests {
         assert!(matches!(
             unwrap_response(403, "", None),
             Err(Fail::RateLimited { .. })
+        ));
+    }
+
+    #[test]
+    fn a_ban_is_never_a_short_429() {
+        let soon = crate::view::now() + 1;
+        let ban = format!(r#"{{"code":1,"error":"RATE_LIMIT_BANNED","reset_at":{soon}}}"#);
+        assert!(matches!(
+            unwrap_response(429, &ban, None),
+            Err(Fail::RateLimited { retry_after_s, .. }) if retry_after_s >= 60
         ));
     }
 

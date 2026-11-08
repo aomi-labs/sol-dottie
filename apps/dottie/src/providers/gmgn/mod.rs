@@ -383,7 +383,8 @@ impl<'a> Gmgn<'a> {
                 // A plain 429 (not a ban) pauses the gate briefly and goes
                 // once more, queued behind the pause.
                 match attempt().await {
-                    (429, Err(Fail::RateLimited { .. })) => {
+                    // A ban carries a long reset; only a short one is a plain 429.
+                    (429, Err(Fail::RateLimited { retry_after_s, .. })) if retry_after_s <= 3 => {
                         tokio::time::sleep(self.rt.gates.after_429(cost, lane)?).await;
                         attempt().await.1
                     }

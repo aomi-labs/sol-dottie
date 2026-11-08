@@ -1,0 +1,1 @@
+{"$status":404,"body":{"error":"{\n  \"address\": \"9St6ETbe3CFitw6UNSd8kg7kZ6STXy71wEGiERqQj89U\",\n  \"chain\": \"solana\",\n  \"found\": false,\n  \"note\": \"no trader on file uses this as a verified trading wallet. FOMO-published signer addresses are deliberately not resolvable.\"\n}"}}

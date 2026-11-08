@@ -10,10 +10,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         session_id: "local-read-smoke".into(),
         tool_name: tool.into(),
         call_id: "read-1".into(),
-        state_attributes: Default::default(),
-        secrets: Default::default(),
+        state_attributes: std::env::var("DOTTIE_WALLET")
+            .ok()
+            .map(|w| serde_json::from_value(json!({"domain": {"svm": {"address": w}}})).unwrap())
+            .unwrap_or_default(),
+        // Secrets from the environment, never from the repo.
+        secrets: [
+            "GMGN_API_KEY",
+            "FOMO_API_KEY",
+            "JUPITER_API_KEY",
+            "SOLANA_RPC_URL",
+        ]
+        .into_iter()
+        .filter_map(|k| Some((k.to_string(), std::env::var(k).ok()?)))
+        .collect(),
     };
-    let app = DottieApp;
+    let app = DottieApp::default();
     if tool == "manifest" {
         println!("{}", serde_json::to_string_pretty(&app.manifest())?);
         return Ok(());

@@ -1,62 +1,462 @@
 [
-  {
-    "symbol": "SOL",
-    "name": "Wrapped SOL (swap mint)",
-    "mint": "So11111111111111111111111111111111111111112",
-    "decimals": 9,
-    "issuer": "Solana native asset",
-    "source": "https://api.fluxbeam.xyz/swagger/doc.json",
-    "actions": [
-      "core_swap",
-      "fluxbeam_quote"
-    ]
-  },
-  {
-    "symbol": "USDC",
-    "name": "USD Coin",
-    "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
-    "decimals": 6,
-    "issuer": "Circle",
-    "source": "https://developers.circle.com/stablecoins/usdc-contract-addresses",
-    "actions": [
-      "core_swap"
-    ]
-  },
-  {
-    "symbol": "FLUXB",
-    "name": "FluxBot",
-    "mint": "FLUXBmPhT3Fd1EDVFdg46YREqHBeNypn1h4EbnTzWERX",
-    "decimals": 5,
-    "issuer": "FluxBot",
-    "source": "https://api.fluxbeam.xyz/swagger/doc.json",
-    "actions": [
-      "risk_check",
-      "fluxbeam_quote"
-    ],
-    "note": "Token-2022 transfer fee; quoted output is not a verified net wallet receipt."
-  },
-  {
-    "symbol": "USDv",
-    "name": "Solomon USDv",
-    "mint": "USDvUSpnhCr9yBgj3UyVrD239HRUv4RsHwH2FxsWuMk",
-    "decimals": 6,
-    "issuer": "Solomon",
-    "source": "https://app.solomonlabs.org/",
-    "actions": [
-      "product_info",
-      "wallet_status"
-    ]
-  },
-  {
-    "symbol": "NVDAx",
-    "name": "NVIDIA xStock",
-    "mint": "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh",
-    "decimals": 8,
-    "issuer": "Backed / xStocks",
-    "source": "https://github.com/trustwallet/assets/blob/master/blockchains/solana/assets/Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh/info.json",
-    "actions": [
-      "core_quote"
-    ],
-    "note": "Identity corroborated by Trust Wallet metadata and FluxBeam verified listing; issuer page inaccessible in verification. Live route, issuer terms and token scaling still require rehearsal. Do not equate raw balance to underlying shares."
-  }
+ {
+  "symbol": "SOL",
+  "name": "Wrapped SOL (swap mint)",
+  "mint": "So11111111111111111111111111111111111111112",
+  "decimals": 9,
+  "issuer": "Solana native asset",
+  "source": "https://api.fluxbeam.xyz/swagger/doc.json",
+  "actions": [
+   "core_swap",
+   "fluxbeam_quote"
+  ],
+  "kind": "native",
+  "program": "token"
+ },
+ {
+  "symbol": "USDC",
+  "name": "USD Coin",
+  "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+  "decimals": 6,
+  "issuer": "Circle",
+  "source": "https://developers.circle.com/stablecoins/usdc-contract-addresses",
+  "actions": [
+   "core_swap"
+  ],
+  "kind": "stable",
+  "program": "token"
+ },
+ {
+  "symbol": "USDT",
+  "name": "USDT",
+  "mint": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+  "decimals": 6,
+  "kind": "stable",
+  "program": "token",
+  "issuer": "USDT",
+  "source": "product-mono aomi/crates/svm/data/tokens.json (verified 2026-11-03)",
+  "actions": [
+   "core_swap"
+  ]
+ },
+ {
+  "symbol": "PYUSD",
+  "name": "PayPal USD",
+  "mint": "2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo",
+  "decimals": 6,
+  "kind": "stable",
+  "program": "token-2022",
+  "issuer": "PayPal USD",
+  "source": "product-mono aomi/crates/svm/data/tokens.json (verified 2026-11-03)",
+  "actions": [
+   "core_swap"
+  ]
+ },
+ {
+  "symbol": "USDG",
+  "name": "Global Dollar",
+  "mint": "2u1tszSeqZ3qBWF3uNGPFc8TzMk2tdiwknnRMWGWjGWH",
+  "decimals": 6,
+  "kind": "stable",
+  "program": "token-2022",
+  "issuer": "Global Dollar",
+  "source": "product-mono aomi/crates/svm/data/tokens.json (verified 2026-11-03)",
+  "actions": [
+   "core_swap"
+  ]
+ },
+ {
+  "symbol": "JitoSOL",
+  "name": "Jito Staked SOL",
+  "mint": "J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn",
+  "decimals": 9,
+  "kind": "lst",
+  "program": "token",
+  "issuer": "Jito Staked SOL",
+  "source": "product-mono aomi/crates/svm/data/tokens.json (verified 2026-11-03)",
+  "actions": [
+   "core_swap"
+  ]
+ },
+ {
+  "symbol": "mSOL",
+  "name": "Marinade Staked SOL",
+  "mint": "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So",
+  "decimals": 9,
+  "kind": "lst",
+  "program": "token",
+  "issuer": "Marinade Staked SOL",
+  "source": "product-mono aomi/crates/svm/data/tokens.json (verified 2026-11-03)",
+  "actions": [
+   "core_swap"
+  ]
+ },
+ {
+  "symbol": "bSOL",
+  "name": "BlazeStake Staked SOL",
+  "mint": "bSo13r4TkiE4KumL71LsHTPpL2euBYLFx6h9HP3piy1",
+  "decimals": 9,
+  "kind": "lst",
+  "program": "token",
+  "issuer": "BlazeStake Staked SOL",
+  "source": "product-mono aomi/crates/svm/data/tokens.json (verified 2026-11-03)",
+  "actions": [
+   "core_swap"
+  ]
+ },
+ {
+  "symbol": "INF",
+  "name": "Infinity",
+  "mint": "5oVNBeEEQvYi1cX3ir8Dx5n1P7pdxydbGF2X4TxVusJm",
+  "decimals": 9,
+  "kind": "lst",
+  "program": "token",
+  "issuer": "Infinity",
+  "source": "product-mono aomi/crates/svm/data/tokens.json (verified 2026-11-03)",
+  "actions": [
+   "core_swap"
+  ]
+ },
+ {
+  "symbol": "JupSOL",
+  "name": "Jupiter Staked SOL",
+  "mint": "jupSoLaHXQiZZTSfEWMTRRgpnyFm8f6sZdosWBjx93v",
+  "decimals": 9,
+  "kind": "lst",
+  "program": "token",
+  "issuer": "Jupiter Staked SOL",
+  "source": "product-mono aomi/crates/svm/data/tokens.json (verified 2026-11-03)",
+  "actions": [
+   "core_swap"
+  ]
+ },
+ {
+  "symbol": "JUP",
+  "name": "Jupiter",
+  "mint": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+  "decimals": 6,
+  "kind": "major",
+  "program": "token",
+  "issuer": "Jupiter",
+  "source": "product-mono aomi/crates/svm/data/tokens.json (verified 2026-11-03)",
+  "actions": [
+   "core_swap"
+  ]
+ },
+ {
+  "symbol": "JTO",
+  "name": "JITO",
+  "mint": "jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL",
+  "decimals": 9,
+  "kind": "major",
+  "program": "token",
+  "issuer": "JITO",
+  "source": "product-mono aomi/crates/svm/data/tokens.json (verified 2026-11-03)",
+  "actions": [
+   "core_swap"
+  ]
+ },
+ {
+  "symbol": "PYTH",
+  "name": "Pyth Network",
+  "mint": "HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3",
+  "decimals": 6,
+  "kind": "major",
+  "program": "token",
+  "issuer": "Pyth Network",
+  "source": "product-mono aomi/crates/svm/data/tokens.json (verified 2026-11-03)",
+  "actions": [
+   "core_swap"
+  ]
+ },
+ {
+  "symbol": "RAY",
+  "name": "Raydium",
+  "mint": "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R",
+  "decimals": 6,
+  "kind": "major",
+  "program": "token",
+  "issuer": "Raydium",
+  "source": "product-mono aomi/crates/svm/data/tokens.json (verified 2026-11-03)",
+  "actions": [
+   "core_swap"
+  ]
+ },
+ {
+  "symbol": "ORCA",
+  "name": "Orca",
+  "mint": "orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE",
+  "decimals": 6,
+  "kind": "major",
+  "program": "token",
+  "issuer": "Orca",
+  "source": "product-mono aomi/crates/svm/data/tokens.json (verified 2026-11-03)",
+  "actions": [
+   "core_swap"
+  ]
+ },
+ {
+  "symbol": "KMNO",
+  "name": "Kamino",
+  "mint": "KMNo3nJsBXfcpJTVhZcXLW7RmTwTt4GVFE7suUBo9sS",
+  "decimals": 6,
+  "kind": "major",
+  "program": "token",
+  "issuer": "Kamino",
+  "source": "product-mono aomi/crates/svm/data/tokens.json (verified 2026-11-03)",
+  "actions": [
+   "core_swap"
+  ]
+ },
+ {
+  "symbol": "DRIFT",
+  "name": "Drift",
+  "mint": "DriFtupJYLTosbwoN8koMbEYSx54aFAVLddWsbksjwg7",
+  "decimals": 6,
+  "kind": "major",
+  "program": "token",
+  "issuer": "Drift",
+  "source": "product-mono aomi/crates/svm/data/tokens.json (verified 2026-11-03)",
+  "actions": [
+   "core_swap"
+  ]
+ },
+ {
+  "symbol": "W",
+  "name": "Wormhole Token",
+  "mint": "85VBFQZC9TZkfaptBWjvUw7YbZjy52A6mjtPGjstQAmQ",
+  "decimals": 6,
+  "kind": "major",
+  "program": "token",
+  "issuer": "Wormhole Token",
+  "source": "product-mono aomi/crates/svm/data/tokens.json (verified 2026-11-03)",
+  "actions": [
+   "core_swap"
+  ]
+ },
+ {
+  "symbol": "cbBTC",
+  "name": "Coinbase Wrapped BTC",
+  "mint": "cbbtcf3aa214zXHbiAZQwf4122FBYbraNdFqgw4iMij",
+  "decimals": 8,
+  "kind": "major",
+  "program": "token",
+  "issuer": "Coinbase Wrapped BTC",
+  "source": "product-mono aomi/crates/svm/data/tokens.json (verified 2026-11-03)",
+  "actions": [
+   "core_swap"
+  ]
+ },
+ {
+  "symbol": "WBTC",
+  "name": "Wrapped BTC (Wormhole)",
+  "mint": "3NZ9JMVBmGAqocybic2c7LQCJScmgsAZ6vQqTDzcqmJh",
+  "decimals": 8,
+  "kind": "major",
+  "program": "token",
+  "issuer": "Wrapped BTC (Wormhole)",
+  "source": "product-mono aomi/crates/svm/data/tokens.json (verified 2026-11-03)",
+  "actions": [
+   "core_swap"
+  ]
+ },
+ {
+  "symbol": "WETH",
+  "name": "Wrapped Ether (Wormhole)",
+  "mint": "7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs",
+  "decimals": 8,
+  "kind": "major",
+  "program": "token",
+  "issuer": "Wrapped Ether (Wormhole)",
+  "source": "product-mono aomi/crates/svm/data/tokens.json (verified 2026-11-03)",
+  "actions": [
+   "core_swap"
+  ]
+ },
+ {
+  "symbol": "NVDAx",
+  "name": "NVIDIA xStock",
+  "mint": "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh",
+  "decimals": 8,
+  "issuer": "Backed / xStocks",
+  "source": "https://github.com/trustwallet/assets/blob/master/blockchains/solana/assets/Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh/info.json",
+  "actions": [
+   "core_quote"
+  ],
+  "note": "Identity corroborated by Trust Wallet metadata and FluxBeam verified listing; issuer page inaccessible in verification. Live route, issuer terms and token scaling still require rehearsal. Do not equate raw balance to underlying shares.",
+  "kind": "stock",
+  "program": "token-2022"
+ },
+ {
+  "symbol": "TSLAx",
+  "name": "Tesla xStock",
+  "mint": "XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB",
+  "decimals": 8,
+  "kind": "stock",
+  "program": "token-2022",
+  "issuer": "Backed Finance (xStocks)",
+  "source": "product-mono aomi/crates/svm/data/tokens.json (verified 2026-11-03)",
+  "actions": [
+   "core_swap"
+  ]
+ },
+ {
+  "symbol": "AAPLx",
+  "name": "Apple xStock",
+  "mint": "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp",
+  "decimals": 8,
+  "kind": "stock",
+  "program": "token-2022",
+  "issuer": "Backed Finance (xStocks)",
+  "source": "product-mono aomi/crates/svm/data/tokens.json (verified 2026-11-03)",
+  "actions": [
+   "core_swap"
+  ]
+ },
+ {
+  "symbol": "SPYx",
+  "name": "SP500 xStock",
+  "mint": "XsoCS1TfEyfFhfvj8EtZ528L3CaKBDBRqRapnBbDF2W",
+  "decimals": 8,
+  "kind": "stock",
+  "program": "token-2022",
+  "issuer": "Backed Finance (xStocks)",
+  "source": "product-mono aomi/crates/svm/data/tokens.json (verified 2026-11-03)",
+  "actions": [
+   "core_swap"
+  ]
+ },
+ {
+  "symbol": "QQQx",
+  "name": "Nasdaq xStock",
+  "mint": "Xs8S1uUs1zvS2p7iwtsG3b6fkhpvmwz4GYU3gWAmWHZ",
+  "decimals": 8,
+  "kind": "stock",
+  "program": "token-2022",
+  "issuer": "Backed Finance (xStocks)",
+  "source": "product-mono aomi/crates/svm/data/tokens.json (verified 2026-11-03)",
+  "actions": [
+   "core_swap"
+  ]
+ },
+ {
+  "symbol": "COINx",
+  "name": "Coinbase xStock",
+  "mint": "Xs7ZdzSHLU9ftNJsii5fCeJhoRWSC32SQGzGQtePxNu",
+  "decimals": 8,
+  "kind": "stock",
+  "program": "token-2022",
+  "issuer": "Backed Finance (xStocks)",
+  "source": "product-mono aomi/crates/svm/data/tokens.json (verified 2026-11-03)",
+  "actions": [
+   "core_swap"
+  ]
+ },
+ {
+  "symbol": "HOODx",
+  "name": "Robinhood xStock",
+  "mint": "XsvNBAYkrDRNhA7wPHQfX3ZUXZyZLdnCQDfHZ56bzpg",
+  "decimals": 8,
+  "kind": "stock",
+  "program": "token-2022",
+  "issuer": "Backed Finance (xStocks)",
+  "source": "product-mono aomi/crates/svm/data/tokens.json (verified 2026-11-03)",
+  "actions": [
+   "core_swap"
+  ]
+ },
+ {
+  "symbol": "GOOGLx",
+  "name": "Alphabet xStock",
+  "mint": "XsCPL9dNWBMvFtTmwcCA5v3xWPSMEBCszbQdiLLq6aN",
+  "decimals": 8,
+  "kind": "stock",
+  "program": "token-2022",
+  "issuer": "Backed Finance (xStocks)",
+  "source": "product-mono aomi/crates/svm/data/tokens.json (verified 2026-11-03)",
+  "actions": [
+   "core_swap"
+  ]
+ },
+ {
+  "symbol": "MSTRx",
+  "name": "MicroStrategy xStock",
+  "mint": "XsP7xzNPvEHS1m6qfanPUGjNmdnmsLKEoNAnHjdxxyZ",
+  "decimals": 8,
+  "kind": "stock",
+  "program": "token-2022",
+  "issuer": "Backed Finance (xStocks)",
+  "source": "product-mono aomi/crates/svm/data/tokens.json (verified 2026-11-03)",
+  "actions": [
+   "core_swap"
+  ]
+ },
+ {
+  "symbol": "METAx",
+  "name": "Meta xStock",
+  "mint": "Xsa62P5mvPszXL1krVUnU5ar38bBSVcWAB6fmPCo5Zu",
+  "decimals": 8,
+  "kind": "stock",
+  "program": "token-2022",
+  "issuer": "Backed Finance (xStocks)",
+  "source": "product-mono aomi/crates/svm/data/tokens.json (verified 2026-11-03)",
+  "actions": [
+   "core_swap"
+  ]
+ },
+ {
+  "symbol": "MCDx",
+  "name": "McDonald's xStock",
+  "mint": "XsqE9cRRpzxcGKDXj1BJ7Xmg4GRhZoyY1KpmGSxAWT2",
+  "decimals": 8,
+  "kind": "stock",
+  "program": "token-2022",
+  "issuer": "Backed Finance (xStocks)",
+  "source": "product-mono aomi/crates/svm/data/tokens.json (verified 2026-11-03)",
+  "actions": [
+   "core_swap"
+  ]
+ },
+ {
+  "symbol": "AMZNx",
+  "name": "Amazon.com xStock",
+  "mint": "Xs3eBt7uRfJX8QUs4suhyU8p2M6DoUDrJyWBa8LLZsg",
+  "decimals": 8,
+  "kind": "stock",
+  "program": "token-2022",
+  "issuer": "Backed Finance (xStocks)",
+  "source": "product-mono aomi/crates/svm/data/tokens.json (verified 2026-11-03)",
+  "actions": [
+   "core_swap"
+  ]
+ },
+ {
+  "symbol": "FLUXB",
+  "name": "FluxBot",
+  "mint": "FLUXBmPhT3Fd1EDVFdg46YREqHBeNypn1h4EbnTzWERX",
+  "decimals": 5,
+  "issuer": "FluxBot",
+  "source": "https://api.fluxbeam.xyz/swagger/doc.json",
+  "actions": [
+   "risk_check",
+   "fluxbeam_quote"
+  ],
+  "note": "Token-2022 transfer fee; quoted output is not a verified net wallet receipt.",
+  "kind": "partner",
+  "program": "token-2022"
+ },
+ {
+  "symbol": "USDv",
+  "name": "Solomon USDv",
+  "mint": "USDvUSpnhCr9yBgj3UyVrD239HRUv4RsHwH2FxsWuMk",
+  "decimals": 6,
+  "issuer": "Solomon",
+  "source": "https://app.solomonlabs.org/",
+  "actions": [
+   "product_info",
+   "wallet_status"
+  ],
+  "kind": "partner",
+  "program": "token"
+ }
 ]

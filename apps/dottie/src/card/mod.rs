@@ -369,7 +369,7 @@ pub mod samples {
             fee_transactions: 4,
             accounting_note: "BEFORE FEES · USDC AT $1".into(),
             ts: 1_792_495_294,
-            tx: "0x4f6a1a7d63".into(),
+            tx: "5wwb5qnfXZieuPmw".into(),
         }
     }
 

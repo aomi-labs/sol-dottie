@@ -128,7 +128,7 @@ impl DynAomiTool for Buy {
                 ));
             };
             let (id, settings) =
-                tokio::join!(identity(rt, turn, &token), settings::saved(rt, turn));
+                tokio::join!(identity(rt, turn, &token), settings::for_trade(rt, turn));
             let id = id?;
             let mut settings = settings?;
             if let Some(bps) = args.slippage_bps {
@@ -192,7 +192,7 @@ impl DynAomiTool for Sell {
                 ));
             };
             let (id, settings) =
-                tokio::join!(identity(rt, turn, &token), settings::saved(rt, turn));
+                tokio::join!(identity(rt, turn, &token), settings::for_trade(rt, turn));
             let id = id?;
             let settings = settings?;
             let Some(size) = size else {

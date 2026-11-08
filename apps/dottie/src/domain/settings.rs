@@ -111,6 +111,16 @@ impl Settings {
     }
 }
 
+/// What quick trades use: the saved settings, or the defaults when this
+/// deployment has no settings store. A configured store that can't be read
+/// stays an error, so a saved tight slippage is never widened to a default.
+pub async fn for_trade(rt: &Runtime, turn: &Turn) -> Result<Settings, Fail> {
+    if turn.settings_store().is_none() {
+        return Ok(Settings::default());
+    }
+    saved(rt, turn).await
+}
+
 /// As [`saved`], falling back to the defaults (said as a gap) when the
 /// store can't be read.
 pub async fn load(rt: &Runtime, turn: &Turn) -> Settings {
@@ -148,6 +158,11 @@ mod tests {
         ));
         assert_eq!(
             rt.tokio.block_on(saved(&rt, &Turn::default())).unwrap(),
+            Settings::default()
+        );
+        // Quick trades on a deployment without a store use the defaults.
+        assert_eq!(
+            rt.tokio.block_on(for_trade(&rt, &turn)).unwrap(),
             Settings::default()
         );
     }

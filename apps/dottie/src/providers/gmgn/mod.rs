@@ -342,35 +342,53 @@ impl<'a> Gmgn<'a> {
         if self.live || route.ttl.is_zero() {
             request = request.live_only();
         }
-        let http = &self.rt.http_v4;
+        let (cost, lane) = (request.cost, self.turn.lane);
+        // One send: its HTTP status (0 when none came back) and result.
+        let attempt = || async {
+            let mut query = query.clone();
+            query.push(("timestamp", crate::view::now().to_string()));
+            query.push(("client_id", client_id()));
+            let url = format!("{HOST}{}", route.path);
+            let http = &self.rt.http_v4;
+            let builder = match &body {
+                Some(b) => http.post(url).json(b),
+                None => http.get(url),
+            };
+            let Ok(response) = builder
+                .query(&query)
+                .header("X-APIKEY", &key)
+                .timeout(Duration::from_secs(15))
+                .send()
+                .await
+            else {
+                return (0, Err(Fail::unavailable(Source::Gmgn, "request failed")));
+            };
+            let status = response.status().as_u16();
+            let reset_header = response
+                .headers()
+                .get("x-ratelimit-reset")
+                .and_then(|v| v.to_str().ok())
+                .and_then(|v| v.parse::<i64>().ok());
+            let Ok(text) = response.text().await else {
+                return (
+                    status,
+                    Err(Fail::unavailable(Source::Gmgn, "response unreadable")),
+                );
+            };
+            trace(route, status, &text);
+            (status, unwrap_response(status, &text, reset_header))
+        };
         self.rt
             .fetch(self.turn, request, || async move {
-                query.push(("timestamp", crate::view::now().to_string()));
-                query.push(("client_id", client_id()));
-                let url = format!("{HOST}{}", route.path);
-                let builder = match &body {
-                    Some(b) => http.post(url).json(b),
-                    None => http.get(url),
-                };
-                let response = builder
-                    .query(&query)
-                    .header("X-APIKEY", key)
-                    .timeout(Duration::from_secs(15))
-                    .send()
-                    .await
-                    .map_err(|_| Fail::unavailable(Source::Gmgn, "request failed"))?;
-                let status = response.status().as_u16();
-                let reset_header = response
-                    .headers()
-                    .get("x-ratelimit-reset")
-                    .and_then(|v| v.to_str().ok())
-                    .and_then(|v| v.parse::<i64>().ok());
-                let text = response
-                    .text()
-                    .await
-                    .map_err(|_| Fail::unavailable(Source::Gmgn, "response unreadable"))?;
-                trace(route, status, &text);
-                unwrap_response(status, &text, reset_header)
+                // A plain 429 (not a ban) pauses the gate briefly and goes
+                // once more, queued behind the pause.
+                match attempt().await {
+                    (429, Err(Fail::RateLimited { .. })) => {
+                        tokio::time::sleep(self.rt.gates.after_429(cost, lane)?).await;
+                        attempt().await.1
+                    }
+                    (_, result) => result,
+                }
             })
             .await
     }

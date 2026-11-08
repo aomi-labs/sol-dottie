@@ -21,7 +21,9 @@ pub enum Lane {
 const GMGN_CAPACITY: u32 = 4;
 const GMGN_WINDOW: Duration = Duration::from_millis(1400);
 /// A chat call waits at most this long in the queue; longer means a gap.
-const GMGN_MAX_WAIT: Duration = Duration::from_secs(4);
+const GMGN_MAX_WAIT: Duration = Duration::from_secs(8);
+/// A 429 pauses GMGN this long; the refused request then goes once more.
+pub const GMGN_429_PAUSE: Duration = Duration::from_millis(1500);
 /// Weight a watch poll must leave free in the window for chats.
 const GMGN_WATCH_HEADROOM: u32 = 2;
 
@@ -109,7 +111,18 @@ impl Gates {
     /// Stops a source's traffic until `retry_after_s` from now (a 429 or a
     /// ban). Only GMGN and Fomo keep a pause; others answer per request.
     pub fn pause(&self, source: Source, retry_after_s: u64) {
-        let until = Instant::now() + Duration::from_secs(retry_after_s.max(2));
+        self.pause_for(source, Duration::from_secs(retry_after_s.max(2)));
+    }
+
+    /// After a GMGN 429: pauses GMGN briefly and queues the refused request
+    /// again behind the pause, returning its wait. Retry it once only.
+    pub fn after_429(&self, cost: Cost, lane: Lane) -> Result<Duration, Fail> {
+        self.pause_for(Source::Gmgn, GMGN_429_PAUSE);
+        self.admit(cost, lane)
+    }
+
+    fn pause_for(&self, source: Source, pause: Duration) {
+        let until = Instant::now() + pause;
         let extend = |slot: &mut Option<Instant>| {
             *slot = Some(slot.map_or(until, |p| p.max(until)));
         };
@@ -135,14 +148,20 @@ impl Gates {
             .gmgn
             .lock()
             .map_err(|_| Fail::Budget("gmgn gate poisoned"))?;
+        // A chat call queues behind a short pause; a long one (or a watch
+        // poll) is refused.
+        let mut start = now;
         if let Some(until) = window.paused_until {
-            if now < until {
+            if until <= now {
+                window.paused_until = None;
+            } else if lane == Lane::Watch || until - now > GMGN_MAX_WAIT {
                 return Err(Fail::RateLimited {
                     source: Source::Gmgn,
                     retry_after_s: (until - now).as_secs().max(1),
                 });
+            } else {
+                start = until;
             }
-            window.paused_until = None;
         }
         while window
             .sent
@@ -152,7 +171,10 @@ impl Gates {
             window.sent.pop_front();
         }
         let weight = weight.min(GMGN_CAPACITY);
-        let mut at = window.sent.back().map_or(now, |(last, _)| (*last).max(now));
+        let mut at = window
+            .sent
+            .back()
+            .map_or(start, |(last, _)| (*last).max(start));
         // Move `at` past the oldest requests until the window from `at`
         // back holds room for this one.
         loop {
@@ -273,8 +295,11 @@ mod tests {
             gates.admit_gmgn(1, Lane::Chat, t0).unwrap(),
             GMGN_WINDOW * 2
         );
-        // Past four seconds of queue the call is refused, not queued.
-        assert!(gates.admit_gmgn(5, Lane::Chat, t0).is_err());
+        // Past eight seconds of queue the call is refused, not queued.
+        let queued = (1..)
+            .take_while(|_| gates.admit_gmgn(5, Lane::Chat, t0).is_ok())
+            .count();
+        assert_eq!(queued, 3, "4.2 s, 5.6 s and 7 s fit; 8.4 s does not");
         // A board (3) and a trenches call (3) never share a window.
         let gates = Gates::default();
         assert_eq!(gates.admit_gmgn(3, Lane::Chat, t0).unwrap(), Duration::ZERO);
@@ -304,6 +329,21 @@ mod tests {
         // 2 of 4 used: another watch poll would leave less than 2 for chat.
         assert!(gates.admit_gmgn(1, Lane::Watch, t0).is_err());
         assert!(gates.admit_gmgn(2, Lane::Chat, t0).is_ok());
+    }
+
+    #[test]
+    fn a_429_queues_the_retry_behind_a_short_pause() {
+        let gates = Gates::default();
+        let wait = gates.after_429(Cost::Gmgn(1), Lane::Chat).unwrap();
+        assert!(
+            wait >= GMGN_429_PAUSE - Duration::from_millis(50),
+            "{wait:?}"
+        );
+        // Other chat calls queue behind it instead of failing; watch polls wait it out.
+        let next = gates.admit_gmgn(1, Lane::Chat, Instant::now()).unwrap();
+        assert!(next >= wait - Duration::from_millis(50));
+        assert!(gates.admit_gmgn(1, Lane::Watch, Instant::now()).is_err());
+        assert!(gates.still_open(Cost::Gmgn(1)).is_err());
     }
 
     #[test]

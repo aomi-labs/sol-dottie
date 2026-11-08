@@ -1,5 +1,5 @@
 //! Dottie's settings store: one small JSON document per host account in
-//! Cloudflare KV, behind the settings Worker (`worker/index.ts`).
+//! Cloudflare KV, behind the settings Worker (`worker/index.js`).
 use crate::runtime::{Cost, Fail, Request, Runtime, Source, Turn};
 use serde_json::Value;
 use std::time::Duration;

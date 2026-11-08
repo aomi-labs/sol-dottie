@@ -166,7 +166,7 @@ pub async fn history(rt: &Runtime, turn: &Turn, q: HistoryQuery<'_>) -> Result<V
 }
 
 /// Tokens priced per first page; the rest show without a value.
-const PRICED: usize = 10;
+const PRICED: usize = 6;
 const STABLES_USD: f64 = 1.0;
 
 pub async fn positions(

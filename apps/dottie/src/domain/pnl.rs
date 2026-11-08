@@ -6,7 +6,7 @@
 //! Policy: profit and return cover the whole round, (proceeds + value now −
 //! buy cost) ÷ buy cost. Realized and unrealized split that profit by
 //! moving weighted-average cost: a sale releases its share of the basis.
-mod settlement;
+pub mod settlement;
 use crate::card::Card;
 use crate::providers::gmgn::{Gmgn, types::Activity};
 use crate::providers::rpc::Rpc;

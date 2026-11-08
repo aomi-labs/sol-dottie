@@ -4,3 +4,25 @@ packages:
 
 onlyBuiltDependencies:
   - esbuild
+
+overrides:
+  # Match the portal: x402 2.29 needs Kit 8, incompatible with Privy 2.
+  "@x402/svm": "2.25.0"
+
+packageExtensions:
+  # Para 2.19 imports these packages without declaring them.
+  "@getpara/core-sdk@2.19.0":
+    dependencies:
+      "@getpara/shared": "1.14.0"
+  "@getpara/react-common@2.19.0":
+    dependencies:
+      "@getpara/shared": "1.14.0"
+  "@getpara/react-core@2.19.0":
+    dependencies:
+      "@getpara/shared": "1.14.0"
+  "@getpara/react-sdk-lite@2.19.0":
+    dependencies:
+      "@getpara/shared": "1.14.0"
+  "@getpara/wagmi-v2-connector@2.19.0":
+    dependencies:
+      eventemitter3: "5.0.1"

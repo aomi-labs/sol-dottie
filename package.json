@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "pnpm --filter web dev",
-    "build:web": "pnpm --filter web build",
+    "build:web": "pnpm --dir web build",
     "typecheck": "pnpm -r typecheck",
     "test:app": "cargo test",
     "test:trace": "node --test tests/*.test.mjs",

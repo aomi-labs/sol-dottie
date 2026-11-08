@@ -234,6 +234,10 @@
   fill: #fff;
 }
 /* Solana chip in each composer's control bar. */
+.dottie-app .dottie-frame button[aria-label="Supported networks"] {
+  display: none;
+}
+
 .dottie-app .dottie-frame .dottie-chain {
   order: -1;
   display: inline-flex;

@@ -11,6 +11,13 @@
   },
   "dependencies": {
     "@aomi-labs/widget": "4.0.2",
+    "@getpara/react-sdk": "2.19.0",
+    "@getpara/wagmi-v2-connector": "2.19.0",
+    "@privy-io/react-auth": "^2.0.0",
+    "@solana-program/system": "0.7.0",
+    "@solana-program/token": "0.5.1",
+    "@solana/kit": "2.3.0",
+    "@solana/spl-token": "0.4.14",
     "qrcode": "1.5.4",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
@@ -22,6 +29,7 @@
     "@vitejs/plugin-react": "^4.7.0",
     "typescript": "^5",
     "vite": "^7.2.2",
+    "vite-plugin-node-polyfills": "^0.28.0",
     "wrangler": "4.150.0"
   },
   "packageManager": "pnpm@10.28.0",

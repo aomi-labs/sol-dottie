@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { AomiWidget, type AomiRoutingConfig } from "@aomi-labs/widget";
 import "@aomi-labs/widget/styles.css";
+import { DottieSignIn, useDottieAuth } from "./sign-in";
 
 const WELCOME_TITLE = "Hi, I’m Dottie. What should we check?";
 
@@ -32,35 +33,40 @@ function routingFor(applicationId: string): AomiRoutingConfig {
 
 export default function DottieWidget({ applicationId, baseUrl, showModelPicker, defaultModel }: DottieWidgetProps) {
   const frameRef = useRef<HTMLDivElement>(null);
+  const { auth, options } = useDottieAuth(baseUrl, applicationId);
   if (defaultModel) presetModel(baseUrl, applicationId, defaultModel);
   return (
     <div className="dottie-frame" ref={frameRef}>
-      <AomiWidget
-        applicationId={applicationId}
-        baseUrl={baseUrl}
-        theme="light"
-        routing={routingFor(applicationId)}
-        auth={{ type: "browser_wallet" }}
-        walletFamilies={["solana"]}
-        wallets={{
-          evm: false,
-          solana: {
-            preset: "popular",
-            networks: [
-              { id: "solana:mainnet", label: "Solana", cluster: "solana:mainnet", rpcHttpUrl: "https://api.mainnet-beta.solana.com", isDefault: true },
-            ],
-          },
-        }}
-        showHeader
-        showSidebar
-        walletPosition="footer"
-        features={{ theme: false, library: false }}
-        controlBarProps={{ hideModel: !showModelPicker, hideAppSecrets: true }}
-        height="100%"
-        width="100%"
-        // Match the frame's inner radius so the corners read as one edge.
-        style={{ borderRadius: 10, boxShadow: "none" }}
-      />
+      <DottieSignIn value={options}>
+        <AomiWidget
+          applicationId={applicationId}
+          baseUrl={baseUrl}
+          theme="light"
+          routing={routingFor(applicationId)}
+          auth={auth}
+          walletFamilies={["solana"]}
+          wallets={{
+            // Widget 4's social providers need the EVM runtime internally.
+            // Dottie's visible wallet family and app routing remain Solana.
+            evm: { wallets: [], coinbase: false },
+            solana: {
+              preset: "popular",
+              networks: [
+                { id: "solana:mainnet", label: "Solana", cluster: "solana:mainnet", rpcHttpUrl: "https://api.mainnet-beta.solana.com", isDefault: true },
+              ],
+            },
+          }}
+          showHeader
+          showSidebar
+          walletPosition="footer"
+          features={{ theme: false, library: false }}
+          controlBarProps={{ hideModel: !showModelPicker, hideAppSecrets: true }}
+          height="100%"
+          width="100%"
+          // Match the frame's inner radius so the corners read as one edge.
+          style={{ borderRadius: 10, boxShadow: "none" }}
+        />
+      </DottieSignIn>
       <DottieBrand frameRef={frameRef} />
     </div>
   );

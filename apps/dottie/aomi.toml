@@ -11,8 +11,33 @@ create = true
 families = ["svm"]
 suggest = "instant"
 
-# A pasted Solana mint opens its risk report directly, without a model turn.
+# Telegram shortcuts: the host runs these direct tools without the model.
+# A pasted Solana mint opens its card with buy and sell buttons.
 [[shortcuts]]
 pattern = '^\s*([1-9A-HJ-NP-Za-km-z]{32,44})\s*$'
-tool = "dottie_token_check"
-arg = "mint"
+tool = "dottie_preview"
+arg = "token"
+
+[[shortcuts]]
+command = "buy"
+tool = "dottie_buy"
+arg = "text"
+description = "Buy a token: /buy <mint> <SOL amount>"
+
+[[shortcuts]]
+command = "sell"
+tool = "dottie_sell"
+arg = "text"
+description = "Sell a token: /sell <mint> <amount or %>"
+
+[[shortcuts]]
+command = "positions"
+tool = "dottie_positions_view"
+arg = "text"
+description = "Your holdings"
+
+[[shortcuts]]
+command = "settings"
+tool = "dottie_settings_view"
+arg = "text"
+description = "Your quick-buy and sell buttons"

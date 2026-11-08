@@ -4,8 +4,12 @@ Sol Dottie is the Solana sidekick from the "Ship a Financial Agent in an Hour"
 clinic (Solana Hacker House London, Breakpoint 2026). This repo holds the site
 and the Rust Aomi app behind it.
 
-- `apps/dottie/`: the dynamic Aomi app. It adds RugCheck research, direct
-  FluxBeam quotes and Solomon USDv reads.
+- `apps/dottie/`: the dynamic Aomi app, "Hoodit for Solana": memecoin research
+  on GMGN (`chain=sol`), real traders and theses from Fomo, Jupiter exit
+  quotes, Solana holdings, history and receipt-based PnL cards, watches,
+  Telegram quick actions and settings. FluxBeam quotes and Solomon USDv reads
+  live in their own skills.
+- `worker/`: the settings Worker (Cloudflare KV) behind quick-action settings.
 - `web/`: the landing page and live desk, a Vite and React site on the published
   `@aomi-labs/widget` (4.0.2). It comes from the `dottie.html` design, in the
   workshop palette (#8E44AD, #A3D9A1, #F5B041, #D5DBDB, #6C3483).
@@ -72,41 +76,57 @@ pnpm test:app                                    # cargo test
 cargo clippy --workspace --all-targets -- -D warnings
 cargo fmt --check
 pnpm test:trace                                  # trace checker rules
-cargo build --release -p dottie                  # target/release/libdottie.dylib on macOS
+pnpm test:settings                               # settings Worker
+cargo build --release -p dottie                  # target/release/libdottie.so on Linux
 ```
 
-Live read-only dispatch needs no keys and signs nothing:
+The replay, direct-trade and PnL tests run on recorded responses, no network.
+`scripts/dottie-record-replay.py` re-records the replay fixture (read-only; the
+GMGN key is shared with Hoodit's bot, so run it once).
+
+Live read-only dispatch signs nothing. Keys come from the environment:
 
 ```sh
+set -a; . ~/.config/hoodit/gmgn.env; . ~/.config/dottie/fomo.env; set +a
 cargo run -p dottie --example read -- manifest
-cargo run -p dottie --example read -- dottie_token_check '{"mint":"FLUXBmPhT3Fd1EDVFdg46YREqHBeNypn1h4EbnTzWERX"}'
-cargo run -p dottie --example read -- dottie_fluxbeam_quote '{"input_mint":"So11111111111111111111111111111111111111112","output_mint":"FLUXBmPhT3Fd1EDVFdg46YREqHBeNypn1h4EbnTzWERX","amount":"10000000","slippage_bps":100}'
-cargo run -p dottie --example read -- dottie_solomon_position '{"wallet":"11111111111111111111111111111111"}'
+cargo run -p dottie --example read -- dottie_token '{"token":"DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263"}'
+cargo run -p dottie --example read -- --plan apps/dottie/tests/fixtures/replay-plan.json
 ```
 
-The last address is a public non-user address. These reads do not prove
-execution.
+Run several calls as one `--plan`: each process has its own provider gate.
+
+### App secrets
+
+| Secret | Needed | Used for |
+| --- | --- | --- |
+| `GMGN_API_KEY` | required | boards, token research, KOL and smart-money feeds, wallets, history |
+| `FOMO_API_KEY` | optional | top traders, positions, theses, Fomo warnings (credits) |
+| `JUPITER_API_KEY` | optional | exit quotes; keyless quotes are paced to one per 2.2 s |
+| `SOLANA_RPC_URL` | optional | holdings, mint accounts, PnL receipts; default public mainnet-beta |
+| `DOTTIE_SETTINGS_URL`, `DOTTIE_SETTINGS_TOKEN` | optional | saved quick-action settings; unset means defaults (0.1/0.5/1 SOL buys, 25/50/100% sells) |
+
+For local settings: `npx wrangler dev -c worker/wrangler.jsonc --var SETTINGS_TOKEN:local-dev-token`,
+then point `DOTTIE_SETTINGS_URL` at `http://127.0.0.1:8787`.
 
 ## What works today
 
 | Capability | Status |
 | --- | --- |
 | Site, concept desk and live desk | Implemented. The real widget needs a hosted app ID. |
-| RugCheck exact-mint reports | Implemented, with pacing, cache and unknown-data handling. |
-| FluxBeam WSOL/FLUXB quotes | Implemented with a capped demo size and exact pool and program checks. |
-| Solomon USDv model and wallet status | Implemented. Partial and unknown observations stay unknown. |
-| Curated assets and NVDAx | Exact identity catalog. Quotes come from the core Jupiter skill. |
-| FluxBeam trade preparation | Disabled until the full transaction and transfer-fee behavior is verified. |
-| Solomon enrollment | Disabled until the challenge, proof and terms contract is verified. |
-| Hosted core swaps, Telegram approvals, billing | Deployment dependencies. Local tests do not show them. |
+| Research: boards, find, card, chart, trades, holders, signals, wallets, exit | Implemented on GMGN `chain=sol`, mint accounts, RugCheck summaries and Jupiter quotes. |
+| Real traders (`dottie_people`) | Implemented on the Fomo API, gated to 18 requests a minute and cached. |
+| Positions, history, PnL and PnL cards | Implemented: RPC holdings on both token programs, GMGN history, receipts from `getTransaction`. |
+| Telegram quick actions (paste a mint, /buy, /sell, /positions, /settings) | Direct tools return `stage_jupiter_swap`; the host stages, simulates and commits. Needs the host's svm direct path. |
+| FluxBeam WSOL/FLUXB quotes, Solomon USDv reads | In the `dottie/fluxbeam` and `dottie/earn` skills. |
+| FluxBeam trade preparation, Solomon enrollment | Disabled until verified. |
 
 The app never signs or broadcasts. Common Solana capabilities come from the
 existing Aomi skills through the `aomi-core` and `svm-core` namespaces.
 
-The HTTP runtime uses fixed provider origins, a 12-second timeout, one request
-per second per provider per process, bounded cache and response sizes, a 429
-cooldown and a five-second queue limit. Quotes are never cached. Several app
-instances need an operator-level rate-limit plan before a large workshop.
+One process-wide request path paces every provider: GMGN's weight window,
+Fomo's per-minute cap, keyless Jupiter and the public RPC. It shares
+identical requests, caches reads and falls back to an aged answer (said as a
+gap) when a provider is down. Quotes are never served stale.
 
 ## Chat from Node
 
@@ -118,8 +138,7 @@ pnpm --filter client ask "Which build are you?"
 pnpm tour
 ```
 
-`tour` runs three sessions: the build and a RugCheck report on USDC, a FluxBeam
-quote for 0.01 SOL into FLUXB, and Solomon USDv with no wallet connected. It
+`tour` runs scripted sessions against the hosted app. It
 prints each tool call and the final reply. Bump `BUILD` in
 `apps/dottie/src/lib.rs` on every change so `dottie_about` shows which build
 answered.

@@ -7,7 +7,8 @@
     "typecheck": "pnpm -r typecheck",
     "test:app": "cargo test",
     "test:trace": "node --test tests/*.test.mjs",
-    "tour": "pnpm --filter client tour"
+    "tour": "pnpm --filter client tour",
+    "test:settings": "node --test worker/index.test.mjs"
   },
   "packageManager": "pnpm@10.28.0"
 }

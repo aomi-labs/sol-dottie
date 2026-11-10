@@ -11,6 +11,8 @@ const HOST: &str = "https://api.fomoapi.io";
 pub const SOLANA: u64 = 1_399_811_149;
 
 const BOARD_TTL: Duration = Duration::from_secs(300);
+const HOLDERS_TTL: Duration = Duration::from_secs(300);
+const ALERTS_TTL: Duration = Duration::from_secs(60);
 const THESES_TTL: Duration = Duration::from_secs(900);
 const WARNINGS_TTL: Duration = Duration::from_secs(900);
 const TRADER_TTL: Duration = Duration::from_secs(3600);
@@ -55,6 +57,20 @@ impl<'a> Fomo<'a> {
     pub async fn theses(self, mint: &str) -> Result<Value, Fail> {
         let path = format!("/v2/thesis/token/{mint}?sort=likes&network=sol&pages=1&limit=12");
         self.get(path, THESES_TTL).await
+    }
+
+    /// The Fomo users holding a coin, biggest first, and how many hold any.
+    /// The card and the holders view share this one read.
+    pub async fn holders(self, mint: &str) -> Result<Value, Fail> {
+        let path = format!("/token/{mint}/holders?network={SOLANA}&limit=100");
+        self.get(path, HOLDERS_TTL).await
+    }
+
+    /// The latest large Solana buys by Fomo users (about $1.4k and up);
+    /// 100 rows reach back several hours.
+    pub async fn buy_alerts(self) -> Result<Value, Fail> {
+        let path = "/v2/alerts?chain=solana&type=buy&limit=100".to_string();
+        self.get(path, ALERTS_TTL).await
     }
 
     /// The warning box Fomo shows before a trade.

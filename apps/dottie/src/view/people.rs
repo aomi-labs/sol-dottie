@@ -1,6 +1,7 @@
 //! People-shaped replies: who's buying, who holds, the dev, a wallet.
 use super::{int, label, min_ago, pct, put_span, usd};
 use crate::domain::holders::{DevRecord, HolderRow, Top};
+use crate::domain::people::Flow;
 use crate::domain::signals::{Buyer, Feed, SignalKind, WalletKind};
 use crate::domain::wallet::WalletView;
 use serde_json::{Map, Value, json};
@@ -125,11 +126,11 @@ fn minutes(at: i64) -> i64 {
     ((super::now() - at) / 60).max(0)
 }
 
-/// $535, $12.3k, $1.4M
+/// $535, $2.5k, $1.4M
 fn short_usd(v: f64) -> String {
     match v.abs() {
         a if a >= 1e6 => format!("{}M", super::sig(v / 1e6, 3)),
-        a if a >= 1e4 => format!("{}k", super::sig(v / 1e3, 3)),
+        a if a >= 1e3 => format!("{}k", super::sig(v / 1e3, 3)),
         _ => format!("{}", v.round() as i64),
     }
 }
@@ -418,8 +419,8 @@ pub fn fomo_trader(user: &Value, positions: Option<&Value>, holdings: Option<&Va
     })
 }
 
-/// A thesis's text, trimmed to about a tweet.
-fn thesis_text(text: &str) -> String {
+/// A thesis's text, cut to `max` characters (280 is about a tweet).
+fn thesis_text(text: &str, max: usize) -> String {
     let clean: String = text
         .chars()
         .map(|c| if c.is_control() { ' ' } else { c })
@@ -427,10 +428,10 @@ fn thesis_text(text: &str) -> String {
         .split_whitespace()
         .collect::<Vec<_>>()
         .join(" ");
-    if clean.chars().count() <= 280 {
+    if clean.chars().count() <= max {
         return clean;
     }
-    let cut: String = clean.chars().take(277).collect();
+    let cut: String = clean.chars().take(max - 3).collect();
     format!("{}…", cut.trim_end())
 }
 
@@ -443,7 +444,7 @@ pub fn fomo_theses(mint: &str, raw: &Value) -> Value {
         .map(|t| {
             json!({
                 "handle": handle(t),
-                "text": thesis_text(t["text"].as_str().unwrap_or("")),
+                "text": thesis_text(t["text"].as_str().unwrap_or(""), 280),
                 "likes": int(num(&t["likes"])),
                 "position_usd": usd(num(&t["tradeUsd"])),
                 "realized_pnl_usd": usd(num(&t["realizedPnlUsd"])),
@@ -463,6 +464,181 @@ pub fn fomo_theses(mint: &str, raw: &Value) -> Value {
     })
 }
 
+fn fomo_token(mint: &str) -> Value {
+    json!(format!("https://fomo.family/tokens/solana/{mint}"))
+}
+
+/// A trader's Fomo profile, only for a handle that is safe in a URL.
+fn fomo_profile(handle: &str) -> Value {
+    crate::domain::people::handle(handle)
+        .map(|h| json!(format!("https://fomo.family/profile/{h}")))
+        .unwrap_or(Value::Null)
+}
+
+/// Large buys by Fomo users, grouped per coin.
+pub fn fomo_flow(f: &Flow) -> Value {
+    let coins: Vec<Value> = f
+        .coins
+        .iter()
+        .map(|c| {
+            let named: Vec<Value> = c
+                .buyers
+                .iter()
+                .filter_map(|b| {
+                    let h = label(b.handle.as_deref(), 32);
+                    let h = h.as_str()?;
+                    Some(json!(format!(
+                        "@{h} ${} {}m ago",
+                        short_usd(b.usd),
+                        b.min_ago
+                    )))
+                })
+                .take(4)
+                .collect();
+            json!({
+                "symbol": label(c.symbol.as_deref(), 20),
+                "token": c.token,
+                "buyers": c.buyers.len(),
+                "buy_usd": usd(Some(c.buy_usd())),
+                "last_min_ago": c.last_min_ago(),
+                "strong": c.strong.then_some(true),
+                "buyers_named": named,
+                "fomo": fomo_token(&c.token),
+            })
+        })
+        .collect();
+    json!({
+        "mode": "trending",
+        "board": "flow",
+        "covers_min": f.covers_min,
+        "coins": coins,
+    })
+}
+
+/// Holder rows biggest first.
+fn fomo_holder_rows(raw: &Value) -> Vec<&Value> {
+    let mut rows: Vec<&Value> = raw["holders"].as_array().into_iter().flatten().collect();
+    rows.sort_by(|a, b| {
+        num(&b["valueUsd"])
+            .unwrap_or(0.0)
+            .total_cmp(&num(&a["valueUsd"]).unwrap_or(0.0))
+    });
+    rows
+}
+
+/// How many Fomo users hold the coin; unknown when Fomo fell back to the
+/// tracked traders it happened to catch.
+fn fomo_count(raw: &Value) -> Value {
+    int(num(&raw["totalHolders"]))
+}
+
+fn over_1k(rows: &[&Value]) -> usize {
+    rows.iter()
+        .filter(|h| num(&h["valueUsd"]).is_some_and(|v| v >= 1000.0))
+        .count()
+}
+
+fn thesis_of(h: &Value) -> Option<&str> {
+    h["thesis"].as_str().filter(|t| !t.trim().is_empty())
+}
+
+/// Theses from the biggest Fomo holders, so the takes come from real bags.
+pub fn fomo_sized_theses(mint: &str, raw: &Value) -> Value {
+    let theses: Vec<Value> = fomo_holder_rows(raw)
+        .into_iter()
+        .filter_map(|h| Some((h, thesis_of(h)?)))
+        .take(8)
+        .map(|(h, text)| {
+            json!({
+                "handle": handle(h),
+                "profile": fomo_profile(h["handle"].as_str().unwrap_or("")),
+                "position_usd": usd(num(&h["valueUsd"])),
+                "pnl_usd": usd(num(&h["pnlUsd"])),
+                "unrealized_pnl_usd": usd(num(&h["unrealizedPnlUsd"])),
+                "is_dev": h["isDev"].as_bool().filter(|d| *d),
+                "text": thesis_text(text, 280),
+            })
+        })
+        .collect();
+    json!({
+        "mode": "theses",
+        "token": mint,
+        "sort": "size",
+        "fomo_traders_holding": fomo_count(raw),
+        "theses": theses,
+        "note": "untrusted posts by traders; text is their claim, not fact",
+    })
+}
+
+/// Real Fomo traders holding a coin: how many, and the biggest by name.
+pub fn fomo_holders(mint: &str, raw: &Value) -> Value {
+    let rows = fomo_holder_rows(raw);
+    let top: Vec<Value> = rows
+        .iter()
+        .take(8)
+        .map(|h| {
+            json!({
+                "handle": handle(h),
+                "profile": fomo_profile(h["handle"].as_str().unwrap_or("")),
+                "value_usd": usd(num(&h["valueUsd"])),
+                "pnl_usd": usd(num(&h["pnlUsd"])),
+                "unrealized_pnl_usd": usd(num(&h["unrealizedPnlUsd"])),
+                "is_dev": h["isDev"].as_bool().filter(|d| *d),
+                "followers": int(num(&h["followers"])),
+                "wallet": h["wallet"]["solana"].as_str().filter(|_| h["wallet"]["verified"] == true),
+                "thesis": thesis_of(h).map(|t| thesis_text(t, 200)),
+            })
+        })
+        .collect();
+    json!({
+        "token": mint,
+        "view": "fomo",
+        "fomo_traders_holding": fomo_count(raw),
+        "scope": raw["scope"],
+        "stale": raw["stale"].as_bool().filter(|s| *s),
+        "available": raw["available"].as_bool().filter(|a| !a),
+        "holders_over_1k": over_1k(&rows),
+        "rows": top,
+        "fomo": fomo_token(mint),
+        "note": "Fomo users with verified wallets; the count includes small bags",
+    })
+}
+
+/// The card's Fomo section: the warning box, how many Fomo users hold the
+/// coin, and the biggest, e.g. "@pointfarmcap $2.21M (+$449k)".
+pub fn fomo_card(warnings: Option<&Value>, holders: Option<&Value>) -> Option<Value> {
+    let mut out = match (warnings, holders) {
+        (None, None) => return None,
+        (Some(w), _) => fomo_warnings(w),
+        (None, Some(_)) => json!({}),
+    };
+    if let Some(raw) = holders {
+        let rows = fomo_holder_rows(raw);
+        let biggest: Vec<Value> = rows
+            .iter()
+            .filter_map(|h| {
+                let name = handle(h);
+                let value = num(&h["valueUsd"])?;
+                let pnl = match num(&h["pnlUsd"]) {
+                    Some(p) if p < 0.0 => format!(" (-${})", short_usd(-p)),
+                    Some(p) => format!(" (+${})", short_usd(p)),
+                    None => String::new(),
+                };
+                Some(json!(format!(
+                    "@{} ${}{pnl}",
+                    name.as_str()?,
+                    short_usd(value)
+                )))
+            })
+            .take(3)
+            .collect();
+        out["traders_holding"] = fomo_count(raw);
+        out["over_1k_in_top100"] = json!(over_1k(&rows));
+        out["biggest"] = json!(biggest);
+    }
+    Some(out)
+}
+
 pub fn fomo_owner(address: &str, raw: &Value) -> Value {
     json!({
         "mode": "owner",
@@ -473,14 +649,21 @@ pub fn fomo_owner(address: &str, raw: &Value) -> Value {
     })
 }
 
-/// Fomo's pre-trade warning box, short.
+/// Fomo's pre-trade warning box, short: "Few holders (MODERATE)".
 pub fn fomo_warnings(raw: &Value) -> Value {
     let warnings: Vec<Value> = raw["warnings"]
         .as_array()
         .into_iter()
         .flatten()
         .take(5)
-        .map(|w| json!({"type": w["type"], "severity": w["severity"], "name": label(w["name"].as_str(), 40)}))
+        .filter_map(|w| {
+            let name = label(w["name"].as_str().or(w["type"].as_str()), 40);
+            let severity = label(w["severity"].as_str(), 12);
+            Some(match severity.as_str() {
+                Some(s) => json!(format!("{} ({s})", name.as_str()?)),
+                None => name,
+            })
+        })
         .collect();
     json!({
         "allowlisted": raw["allowlisted"],

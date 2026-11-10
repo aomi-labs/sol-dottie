@@ -25,7 +25,8 @@ fn identity(out: &mut Map<String, Value>, s: &TokenSnapshot) {
     put_span(out, "age", s.created_at);
 }
 
-/// The full card for one token. `fomo` is Fomo's pre-trade warning box.
+/// The full card for one token. `fomo` is Fomo's warning box and holder
+/// summary.
 pub fn card(s: &TokenSnapshot, probe: Option<&Probe>, fomo: Option<Value>) -> Value {
     let mut out = Map::new();
     identity(&mut out, s);
@@ -374,16 +375,29 @@ mod tests {
             route: vec!["Pump.fun Amm".into(), "Whirlpool".into()],
             result: ExitResult::Ok,
         };
-        let fomo = json!({"allowlisted": false, "warnings": [{"type": "FEW_HOLDERS", "severity": "MODERATE", "name": "Few holders"}]});
+        let warnings = json!({"allowlisted": false, "warnings": [{"type": "FEW_HOLDERS", "severity": "MODERATE", "name": "Few holders"}]});
         let turn = crate::runtime::Turn::default();
         turn.gap("rugcheck unavailable (UNAVAILABLE); authorities and transfer fee are gmgn's or unknown");
-        let out = reply(card(&s, Some(&probe), Some(fomo)), &turn);
+        let holders: Value = serde_json::from_str(
+            &std::fs::read_to_string(format!(
+                "{}/src/fixtures/fomo/holders_stonk.json",
+                env!("CARGO_MANIFEST_DIR")
+            ))
+            .unwrap(),
+        )
+        .unwrap();
+        let fomo = crate::view::people::fomo_card(Some(&warnings), Some(&holders));
+        let out = reply(card(&s, Some(&probe), fomo), &turn);
         assert!(size(&out) <= MAX_REPLY, "{}", size(&out));
         assert_eq!(out["status"], "partial");
         assert_eq!(out["security"]["honeypot"], "unknown");
         assert_eq!(out["security"]["freeze_renounced"], false);
         assert!(out["links"]["gmgn"].as_str().unwrap().ends_with(&s.token));
         assert!(out["buy_1h_usd"].is_number());
+        assert_eq!(out["fomo"]["warnings"][0], "Few holders (MODERATE)");
+        assert_eq!(out["fomo"]["traders_holding"], 42178);
+        assert_eq!(out["fomo"]["over_1k_in_top100"], 10);
+        assert_eq!(out["fomo"]["biggest"][0], "@pointfarmcap $2.21M (+$449k)");
     }
 
     #[test]

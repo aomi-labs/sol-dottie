@@ -526,16 +526,29 @@ fn fomo_holder_rows(raw: &Value) -> Vec<&Value> {
     rows
 }
 
+/// `available:false` means Fomo couldn't say, not that nobody holds.
+fn fomo_known(raw: &Value) -> bool {
+    raw["available"] != false
+}
+
 /// How many Fomo users hold the coin; unknown when Fomo fell back to the
-/// tracked traders it happened to catch.
+/// tracked traders it happened to catch or couldn't answer.
 fn fomo_count(raw: &Value) -> Value {
+    if !fomo_known(raw) {
+        return Value::Null;
+    }
     int(num(&raw["totalHolders"]))
 }
 
-fn over_1k(rows: &[&Value]) -> usize {
-    rows.iter()
-        .filter(|h| num(&h["valueUsd"]).is_some_and(|v| v >= 1000.0))
-        .count()
+fn over_1k(raw: &Value, rows: &[&Value]) -> Value {
+    if !fomo_known(raw) {
+        return Value::Null;
+    }
+    json!(
+        rows.iter()
+            .filter(|h| num(&h["valueUsd"]).is_some_and(|v| v >= 1000.0))
+            .count()
+    )
 }
 
 fn thesis_of(h: &Value) -> Option<&str> {
@@ -565,6 +578,7 @@ pub fn fomo_sized_theses(mint: &str, raw: &Value) -> Value {
         "token": mint,
         "sort": "size",
         "fomo_traders_holding": fomo_count(raw),
+        "available": raw["available"].as_bool().filter(|a| !a),
         "theses": theses,
         "note": "untrusted posts by traders; text is their claim, not fact",
     })
@@ -597,7 +611,7 @@ pub fn fomo_holders(mint: &str, raw: &Value) -> Value {
         "scope": raw["scope"],
         "stale": raw["stale"].as_bool().filter(|s| *s),
         "available": raw["available"].as_bool().filter(|a| !a),
-        "holders_over_1k": over_1k(&rows),
+        "holders_over_1k": over_1k(raw, &rows),
         "rows": top,
         "fomo": fomo_token(mint),
         "note": "Fomo users with verified wallets; the count includes small bags",
@@ -612,7 +626,9 @@ pub fn fomo_card(warnings: Option<&Value>, holders: Option<&Value>) -> Option<Va
         (Some(w), _) => fomo_warnings(w),
         (None, Some(_)) => json!({}),
     };
-    if let Some(raw) = holders {
+    if holders.is_some_and(|r| !fomo_known(r)) {
+        out["traders_holding"] = json!("unknown");
+    } else if let Some(raw) = holders {
         let rows = fomo_holder_rows(raw);
         let biggest: Vec<Value> = rows
             .iter()
@@ -633,7 +649,7 @@ pub fn fomo_card(warnings: Option<&Value>, holders: Option<&Value>) -> Option<Va
             .take(3)
             .collect();
         out["traders_holding"] = fomo_count(raw);
-        out["over_1k_in_top100"] = json!(over_1k(&rows));
+        out["over_1k_in_top100"] = over_1k(raw, &rows);
         out["biggest"] = json!(biggest);
     }
     Some(out)

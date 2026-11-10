@@ -181,7 +181,7 @@ pub fn flow(raw: &Value, now: i64, limit: usize) -> Flow {
             FlowCoin {
                 token: token.to_string(),
                 symbol: symbol.map(str::to_string),
-                strong: buyers.iter().filter(|b| b.min_ago <= 60).count() >= 3,
+                strong: buyers.iter().filter(|b| b.min_ago < 60).count() >= 3,
                 buyers,
             }
         })
@@ -308,6 +308,17 @@ mod tests {
             format!("https://fomo.family/tokens/solana/{}", pussy.token)
         );
         assert!(flow(&serde_json::json!({}), newest, 5).coins.is_empty());
+        // Three buyers 60m59s ago are past the hour.
+        let three = |age_s: i64| {
+            let alerts: Vec<_> = ["a", "b", "c"]
+                .map(|u| {
+                    serde_json::json!({"id": u, "ts": (newest - age_s) * 1000, "type": "buy",
+                    "chain": "solana", "tokenAddress": "T", "userId": u, "usdValue": 2000})
+                })
+                .into();
+            flow(&serde_json::json!({ "alerts": alerts }), newest, 1).coins[0].strong
+        };
+        assert!(three(59 * 60 + 59) && !three(60 * 60 + 59));
     }
 
     #[test]
@@ -349,6 +360,12 @@ mod tests {
             serde_json::json!({"scope": "tracked-traders", "available": false, "holders": []});
         let out = crate::view::compact(view::fomo_holders("m", &fallback));
         assert!(out.get("fomo_traders_holding").is_none());
+        assert!(out.get("holders_over_1k").is_none());
         assert_eq!(out["available"], false);
+        let theses = crate::view::compact(view::fomo_sized_theses("m", &fallback));
+        assert_eq!(theses["available"], false);
+        let card = view::fomo_card(None, Some(&fallback)).unwrap();
+        assert_eq!(card["traders_holding"], "unknown");
+        assert!(card.get("over_1k_in_top100").is_none());
     }
 }

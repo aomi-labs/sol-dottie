@@ -1,5 +1,6 @@
 use super::{address, run};
 use crate::domain::holders;
+use crate::providers::fomo::Fomo;
 use crate::runtime::{DottieApp, Lane};
 use aomi_sdk::schemars::JsonSchema;
 use aomi_sdk::{DynAomiTool, DynToolCallCtx};
@@ -19,6 +20,8 @@ pub enum View {
     Traders,
     /// The dev: what they still hold and their launches, graduated or not.
     Dev,
+    /// Real Fomo traders holding it: how many, and the biggest by name with position, PnL and their thesis.
+    Fomo,
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -36,7 +39,7 @@ impl DynAomiTool for Holders {
     type App = DottieApp;
     type Args = HoldersArgs;
     const NAME: &'static str = "dottie_holders";
-    const DESCRIPTION: &'static str = "Who holds a Solana token. view=top: holder count, top-10 share and the biggest holders with % of supply, USD value, how long held and labels (pools and curves labelled). view=smart or kol: those holders by name with PnL. view=traders: who made money on it. view=dev: the dev wallet, what it still holds and its other launches. Wallets are addresses, not people.";
+    const DESCRIPTION: &'static str = "Who holds a Solana token. view=top: holder count, top-10 share and the biggest holders with % of supply, USD value, how long held and labels (pools and curves labelled). view=smart or kol: those holders by name with PnL. view=traders: who made money on it. view=dev: the dev wallet, what it still holds and its other launches. view=fomo: how many real Fomo traders hold it and the biggest by name with PnL and thesis. Other wallets are addresses, not people.";
 
     fn run(app: &DottieApp, args: HoldersArgs, ctx: DynToolCallCtx) -> Result<Value, String> {
         run(app, &ctx, Lane::Chat, async |rt, turn| {
@@ -64,6 +67,10 @@ impl DynAomiTool for Holders {
                 View::Dev => {
                     crate::view::people::dev(&token, &holders::dev(rt, turn, &token).await?)
                 }
+                View::Fomo => crate::view::people::fomo_holders(
+                    &token,
+                    &Fomo::new(rt, turn).holders(&token).await?,
+                ),
             })
         })
     }

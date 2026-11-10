@@ -27,7 +27,7 @@ impl DynAomiTool for Signals {
     type App = DottieApp;
     type Args = SignalsArgs;
     const NAME: &'static str = "dottie_signals";
-    const DESCRIPTION: &'static str = "What KOLs and smart-money wallets on Solana are buying right now, grouped per coin: the named KOL buyers with X handle, dollars and whether they still hold, how many smart wallets bought, FDV at the latest trade, and price-spike, ATH and market-cap events. Leads to research, not picks: these wallets run about breakeven.";
+    const DESCRIPTION: &'static str = "GMGN's KOL and smart-money feed on Solana, grouped per coin: named buyers, dollars, whether they still hold, FDV at the latest trade, price-spike/ATH events. These wallets are mostly fast bots and launch flippers (median trade ~$100): use it for new or degen plays, not for \"what big traders/KOLs buy\" (that's dottie_people flow). Leads to research, not picks.";
 
     fn run(app: &DottieApp, args: SignalsArgs, ctx: DynToolCallCtx) -> Result<Value, String> {
         run(app, &ctx, Lane::Chat, async |rt, turn| {

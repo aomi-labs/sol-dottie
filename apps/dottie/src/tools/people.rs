@@ -13,11 +13,11 @@ pub enum ModeArg {
     Leaders,
     /// One trader by handle: verified wallet, PnL, Solana positions.
     Trader,
-    /// The most-liked theses holders wrote on a coin (one page).
+    /// Theses on a coin from its biggest Fomo holders (`sort`).
     Theses,
     /// Which Fomo trader owns a wallet.
     Owner,
-    /// The coins Fomo users trade now (`board`).
+    /// The coins Fomo users trade, hold or buy big now (`board`).
     Trending,
 }
 
@@ -36,6 +36,17 @@ pub enum WindowArg {
 pub enum BoardArg {
     Trending,
     MostHeld,
+    /// Live large buys ($1.4k+) grouped per coin, with named buyers.
+    Flow,
+}
+
+#[derive(Deserialize, JsonSchema, Clone, Copy)]
+#[serde(rename_all = "snake_case")]
+pub enum SortArg {
+    /// Biggest holders first, with position and PnL.
+    Size,
+    /// Most liked among the newest posts.
+    Likes,
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -46,6 +57,8 @@ pub struct PeopleArgs {
     pub window: Option<WindowArg>,
     /// trending board. null = trending.
     pub board: Option<BoardArg>,
+    /// theses order. null = size.
+    pub sort: Option<SortArg>,
     /// trader: Fomo handle, e.g. "@Binkieee".
     pub handle: Option<String>,
     /// theses: exact Solana mint.
@@ -62,7 +75,7 @@ impl DynAomiTool for People {
     type App = DottieApp;
     type Args = PeopleArgs;
     const NAME: &'static str = "dottie_people";
-    const DESCRIPTION: &'static str = "Real traders from Fomo. leaders: top traders by PnL (24h/7d/30d) with their Solana wallet and top coins. trader: one handle's verified wallet, PnL and Solana positions (or holdings; coverage top_token_summary means neither had Solana rows). theses: what holders wrote about a mint, most liked, with each writer's position and PnL. owner: which trader owns a wallet. trending: coins Fomo users trade now or hold most. Each call spends credits: one call per question.";
+    const DESCRIPTION: &'static str = "Real traders from Fomo, verified wallets. leaders: top traders by PnL (24h/7d/30d) with their Solana wallet and top coins. trader: one handle's verified wallet, PnL, Solana holdings by value and recent positions (coverage top_token_summary: no Solana rows). theses: takes on a mint from its biggest holders with position and PnL (sort=likes: most liked recent posts). owner: which trader owns a wallet. trending: coins Fomo users trade now or hold most; board=flow: live $1.4k+ buys per coin with named buyers. Calls spend credits: reuse results.";
 
     fn run(app: &DottieApp, args: PeopleArgs, ctx: DynToolCallCtx) -> Result<Value, String> {
         run(app, &ctx, Lane::Chat, async |rt, turn| {
@@ -82,6 +95,11 @@ impl DynAomiTool for People {
                 board: match args.board.unwrap_or(BoardArg::Trending) {
                     BoardArg::Trending => "trending",
                     BoardArg::MostHeld => "most-held",
+                    BoardArg::Flow => "flow",
+                },
+                sort: match args.sort.unwrap_or(SortArg::Size) {
+                    SortArg::Size => "size",
+                    SortArg::Likes => "likes",
                 },
                 handle: args.handle.as_deref(),
                 token: args.token.as_deref(),

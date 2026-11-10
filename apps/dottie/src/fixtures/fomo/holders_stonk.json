@@ -1,0 +1,257 @@
+{
+ "token": "6GmAFSYs4gk3FDao5FzzySQpPZaWsa4rUJHacpMpUNgx",
+ "scope": "live-top-holders",
+ "source": "live-fomo",
+ "count": 99,
+ "totalHolders": 42178,
+ "holders": [
+  {
+   "handle": "pointfarmcap",
+   "displayName": "point farm capital",
+   "wallet": {
+    "solana": "Beqv6dzTcjV2eodo8RRXCiCcnSYrS1vkQKhfqwHXqeit",
+    "evm": "0xfd87eda88be6c372453b721da63d58ad1a5b2d94",
+    "verified": true,
+    "evidence": {
+     "solana": "onchain-holdings",
+     "evm": "onchain-holdings"
+    }
+   },
+   "amount": 41772891.73,
+   "valueUsd": 2211956.57,
+   "priceUsd": 0.05295196193805803,
+   "pnlUsd": 449134.56,
+   "unrealizedPnlUsd": 467943.97,
+   "costBasisUsd": 1855962.47,
+   "isDev": false,
+   "followers": 563999,
+   "verified": false,
+   "clan": null,
+   "thesis": "be the change you want to see onchain\n\nhttps://x.com/pointfarmcap/status/2119818080151072867"
+  },
+  {
+   "handle": "tvmx",
+   "displayName": "TVMX",
+   "wallet": {
+    "solana": "F5hkYsi8JxjyA2JHN5CA7MbnnhWubkXB2ZQB7Gkaxqs6",
+    "evm": "0xa0670863bd5cd0d60022bab2eed78e81e1a06bce",
+    "verified": true,
+    "evidence": {
+     "solana": "onchain-holdings",
+     "evm": "onchain-holdings"
+    }
+   },
+   "amount": 14500896.92,
+   "valueUsd": 767850.94,
+   "priceUsd": 0.05295196193805803,
+   "pnlUsd": 1061170.33,
+   "unrealizedPnlUsd": 625756.12,
+   "costBasisUsd": 185523.72,
+   "isDev": false,
+   "followers": 376301,
+   "verified": false,
+   "clan": {
+    "id": "75cefc60-e6f6-4189-8073-18e7cb37db5d",
+    "name": "Dabal",
+    "icon": "https://prod-fomo-profile-pics.s3.amazonaws.com/4e06a6f1dfd20a96b96ee5e38c7e012a.jpg?k=313OA_CsKPqbUei60Yw546Vig",
+    "role": null
+   },
+   "thesis": "500k revenue a day in a dead market.\n20% BURNT now\nSupply squeeze will come."
+  },
+  {
+   "handle": "0xdetweiler",
+   "displayName": "Theo",
+   "wallet": {
+    "solana": "EC2f5DnHzuNRit1ExqghSifDbp1wgrzktsRRZCtU92MJ",
+    "evm": "0x838a336d19ae121a0ca754ebbdd57282de656dfa",
+    "verified": true,
+    "evidence": {
+     "solana": "onchain-holdings",
+     "evm": "onchain-holdings"
+    }
+   },
+   "amount": 7904037.39,
+   "valueUsd": 418534.29,
+   "priceUsd": 0.05295196193805803,
+   "pnlUsd": 737055.41,
+   "unrealizedPnlUsd": 78479.4,
+   "costBasisUsd": 2330903.3,
+   "isDev": false,
+   "followers": 86572,
+   "verified": false,
+   "clan": null,
+   "thesis": "2 whales capitulated at the same time. while not great, it could mark the bottom. need the market to behave, and stonk will recover. \n\nthe team is building out the resources required to regain marketshare. a token goes from 1m -> 300m in the span of a month, it isnt expected, or something u can prepare for. playing catchup while the market is like this is probably a good thing. once the market is back, the foundations will be much stronger."
+  },
+  {
+   "handle": "monke365",
+   "displayName": "monke",
+   "wallet": {
+    "solana": "5B9YG9eutctcKc2AQ3MmC3kUHqAizVpsXttXJDfxhg8t",
+    "evm": "0x0f30f41a5dd7e14fbcddad5c345eefdd7418a7ff",
+    "verified": true,
+    "evidence": {
+     "solana": "onchain-holdings",
+     "evm": "onchain-holdings"
+    }
+   },
+   "amount": 6021354.15,
+   "valueUsd": 318842.52,
+   "priceUsd": 0.05295196193805803,
+   "pnlUsd": -719080.05,
+   "unrealizedPnlUsd": -668806.33,
+   "costBasisUsd": 2151468.72,
+   "isDev": false,
+   "followers": 22900,
+   "verified": false,
+   "clan": null,
+   "thesis": null
+  },
+  {
+   "handle": "TheOnlyOMP",
+   "displayName": "Old Man Pervert",
+   "wallet": {
+    "solana": "49MHZz9c1mE1ePTcLxBWPjf7KKzt3Ntd25JnspKvV8vL",
+    "evm": "0x33dcea75de7cde9aabbc76482b35964e600ae359",
+    "verified": true,
+    "evidence": {
+     "solana": "onchain-holdings",
+     "evm": "onchain-holdings"
+    }
+   },
+   "amount": 4865365.22,
+   "valueUsd": 257630.63,
+   "priceUsd": 0.05295196193805803,
+   "pnlUsd": 207838.84,
+   "unrealizedPnlUsd": 199174.48,
+   "costBasisUsd": 76866.6,
+   "isDev": false,
+   "followers": 37811,
+   "verified": false,
+   "clan": null,
+   "thesis": "chances are far betting for passing wif aths at some point than they are not. i'll take that bet any day of the week."
+  },
+  {
+   "handle": "RZDxbt",
+   "displayName": "RZD",
+   "wallet": {
+    "solana": "5MfuqNSawthUL1qdJJTN8DauQvJYSUkuuZuySXuVc6Tz",
+    "evm": "0xafe3b520b70db0f7fb50d2e1fc00e9b837abc322",
+    "verified": true,
+    "evidence": {
+     "solana": "onchain-holdings",
+     "evm": "onchain-holdings"
+    }
+   },
+   "amount": 3154895.11,
+   "valueUsd": 167057.89,
+   "priceUsd": 0.05295196193805803,
+   "pnlUsd": 942919.86,
+   "unrealizedPnlUsd": 101568.78,
+   "costBasisUsd": 330498.41,
+   "isDev": false,
+   "followers": 18832,
+   "verified": false,
+   "clan": null,
+   "thesis": "STONK brought all of solana together bringing ATH revenue to all the partners that have been building for years. \n\nThe extractors who shit on pumpfun and say we need to rally into something will try so so hard to convince you to buy another bunch of low cap launchpads they have massive supply in. The same people who shit on pump fun but doing the exact thing that has drained the trenches.\n\nYou have a choice. You can join them while they inevitably drill you into the ground yet again, or buy the only token that\u2019s given reprieve to the Solana ecosystem in years and brought revenue instead of extracting sol.\n\nIt doesn\u2019t really matter whether you\u2019re in or you\u2019re out, STONK will go where it\u2019s destined. I\u2019d just rather you be in than continue to get rinsed by the same people who\u2019ve rinsed you for years.\n\nLove you."
+  },
+  {
+   "handle": "TheDazzleNovak",
+   "displayName": "Dazzle Novak",
+   "wallet": {
+    "solana": "HspgvMUZf9AtZz6EiqL5wjFPaEDSDegGtqFqXE6MDNxm",
+    "evm": "0x33e2230066c8665c525b1b5a25f857e243086ac2",
+    "verified": true,
+    "evidence": {
+     "solana": "onchain-holdings",
+     "evm": "onchain-holdings"
+    }
+   },
+   "amount": 2873003.76,
+   "valueUsd": 152131.19,
+   "priceUsd": 0.05295196193805803,
+   "pnlUsd": 771419.58,
+   "unrealizedPnlUsd": 133584.36,
+   "costBasisUsd": 50296.58,
+   "isDev": false,
+   "followers": 19504,
+   "verified": false,
+   "clan": null,
+   "thesis": "As painful as this is\u2026Stonk needs to find truly where its bottom is. It may be in now or it may be a little lower if the market drops. We are still really early bull market/pre bull market and buybacks and burns are still going and this lower price gives a better impact for those. Onchain volume being this low makes this price make a lot more sense. We want to see onchain action pick up and see that Stonk is still where people choose to launch. I do believe Mask is such a high quality privacy product and team that it will lead the comeback as its revenue and buybacks continue to press it up"
+  },
+  {
+   "handle": "xbtDLN",
+   "displayName": "DLN",
+   "wallet": {
+    "solana": "B4wHhJEGLDXv7oSzHvvDmYnxTmZyu9MEagYj7qDjGgz7",
+    "evm": "0x07ae8de8deca364dd1489a23e61c03b911d85ad2",
+    "verified": false,
+    "evidence": {
+     "solana": "onchain-holdings",
+     "evm": "provider-claimed"
+    },
+    "note": "An address marked provider-claimed came from the upstream provider and has NOT been matched against this trader's on-chain positions. It is checked to be an ordinary account rather than a contract, but treat it as a lead. evidence:\"onchain-holdings\" is proven."
+   },
+   "amount": 2547927.89,
+   "valueUsd": 134917.78,
+   "priceUsd": 0.05295196193805803,
+   "pnlUsd": 131947.31,
+   "unrealizedPnlUsd": 131947.31,
+   "costBasisUsd": 2970.45,
+   "isDev": false,
+   "followers": 13605,
+   "verified": false,
+   "clan": null,
+   "thesis": "https://x.com/xbtdln/status/2084674782943932895?s=46"
+  },
+  {
+   "handle": "earn168",
+   "displayName": "earn",
+   "wallet": {
+    "solana": "DYbZngFdHcaEEo4iLpjtAXKgXCECftbAhZeampomtCQc",
+    "evm": "0x1e15bf63f281c7b77894c76a376aa917945d40af",
+    "verified": false,
+    "evidence": {
+     "solana": "onchain-holdings",
+     "evm": "provider-claimed"
+    },
+    "note": "An address marked provider-claimed came from the upstream provider and has NOT been matched against this trader's on-chain positions. It is checked to be an ordinary account rather than a contract, but treat it as a lead. evidence:\"onchain-holdings\" is proven."
+   },
+   "amount": 2399151.11,
+   "valueUsd": 127039.76,
+   "priceUsd": 0.05295196193805803,
+   "pnlUsd": -682413.54,
+   "unrealizedPnlUsd": -611400.68,
+   "costBasisUsd": 845166.15,
+   "isDev": false,
+   "followers": 14075,
+   "verified": false,
+   "clan": null,
+   "thesis": "This drop is beyond my comprehension\u2014I can't even imagine it. I'm so deep in losses that I'm depressed. I hope the market picks up."
+  },
+  {
+   "handle": "moonshyne",
+   "displayName": "moonshyne",
+   "wallet": {
+    "solana": "DQqP2exHdXAM1q7V8zkzRF8KnZp31yksZ3fXgZ6CgZd5",
+    "evm": "0xfa57428089b91effbe5101d2735ddcb1b1d26ae3",
+    "verified": false,
+    "evidence": {
+     "solana": "onchain-holdings",
+     "evm": "provider-claimed"
+    },
+    "note": "An address marked provider-claimed came from the upstream provider and has NOT been matched against this trader's on-chain positions. It is checked to be an ordinary account rather than a contract, but treat it as a lead. evidence:\"onchain-holdings\" is proven."
+   },
+   "amount": 2270446.3,
+   "valueUsd": 120224.59,
+   "priceUsd": 0.05295196193805803,
+   "pnlUsd": -285390.22,
+   "unrealizedPnlUsd": -295785.27,
+   "costBasisUsd": 552067.01,
+   "isDev": false,
+   "followers": 1457,
+   "verified": false,
+   "clan": null,
+   "thesis": null
+  }
+ ]
+}

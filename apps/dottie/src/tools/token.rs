@@ -73,7 +73,7 @@ impl DynAomiTool for Token {
     type App = DottieApp;
     type Args = TokenArgs;
     const NAME: &'static str = "dottie_token";
-    const DESCRIPTION: &'static str = "One Solana token by exact mint. mode trade: security, Token-2022 fee, liquidity and one Jupiter buy/sell quote at sol_amount or usd_amount and the coin's default slippage (or the user's slippage_bps); do not also call dottie_exit. Its `stage` is stage_jupiter_swap's exact args: pass it as is. checks_passed is advisory: disclose warnings and let the user explicitly proceed. Unknown never becomes a pass. mode full (default): the research card (launchpad and curve, authorities, holder mix, dev, socials, RugCheck, Fomo warnings, links) with an indicative 0.1 SOL exit. Quotes are not fills.";
+    const DESCRIPTION: &'static str = "One Solana token by exact mint. mode trade: security, Token-2022 fee, liquidity and one Jupiter buy/sell quote at sol_amount or usd_amount and the coin's default slippage (or the user's slippage_bps); do not also call dottie_exit. Its `stage` is stage_jupiter_swap's exact args: pass it as is. checks_passed is advisory: disclose warnings and let the user explicitly proceed. Unknown never becomes a pass. mode full (default): the research card (launchpad and curve, authorities, holder mix, dev, socials, RugCheck, Fomo warnings and holders, links) with an indicative 0.1 SOL exit. Quotes are not fills.";
 
     fn run(app: &DottieApp, args: TokenArgs, ctx: DynToolCallCtx) -> Result<Value, String> {
         run(app, &ctx, Lane::Chat, async |rt, turn| {
@@ -90,25 +90,38 @@ impl DynAomiTool for Token {
             }
             // The exit probe runs alongside the reads; it is the only test
             // that catches traps the security screen calls clean.
-            let (snap, probe, fomo) = tokio::join!(
+            let fomo = Fomo::new(rt, turn);
+            let base = is_base_asset(&token);
+            let (snap, probe, warnings, holders) = tokio::join!(
                 snapshot(rt, turn, &token, Depth::Card),
                 Exits::new(rt, turn).probe(&token),
-                async {
-                    if is_base_asset(&token) {
-                        return None;
-                    }
-                    match Fomo::new(rt, turn).warnings(&token).await {
-                        Ok(w) => Some(crate::view::people::fomo_warnings(&w)),
-                        Err(Fail::Unconfigured(_)) => None,
-                        Err(fail) => {
-                            turn.gap(format!("fomo warnings unavailable: {}", fail.message()));
-                            None
-                        }
-                    }
-                }
+                fomo_read(turn, "warnings", base, fomo.warnings(&token)),
+                fomo_read(turn, "holders", base, fomo.holders(&token)),
             );
+            let fomo = crate::view::people::fomo_card(warnings.as_ref(), holders.as_ref());
             Ok(crate::view::token::card(&snap?, Some(&probe), fomo))
         })
+    }
+}
+
+/// A Fomo read for the card: skipped for base assets and without a key,
+/// any other failure noted as a gap.
+async fn fomo_read(
+    turn: &crate::runtime::Turn,
+    what: &str,
+    base: bool,
+    read: impl Future<Output = Result<Value, Fail>>,
+) -> Option<Value> {
+    if base {
+        return None;
+    }
+    match read.await {
+        Ok(v) => Some(v),
+        Err(Fail::Unconfigured(_)) => None,
+        Err(fail) => {
+            turn.gap(format!("fomo {what} unavailable: {}", fail.message()));
+            None
+        }
     }
 }
 

@@ -200,7 +200,7 @@ fn fomo_people_modes_answer() {
             .iter()
             .all(|t| is_mint(&t["token"]))
     );
-    let theses = call::<People>(json!({"mode":"theses","token":FLOAT}));
+    let theses = call::<People>(json!({"mode":"theses","token":FLOAT,"sort":"likes"}));
     assert!(!theses["theses"].as_array().unwrap().is_empty());
 }
 

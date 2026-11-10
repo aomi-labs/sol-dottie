@@ -357,16 +357,16 @@ pub fn solana_positions(positions: &Value) -> usize {
         .map_or(0, |t| t.iter().filter(|p| solana(p)).count())
 }
 
-/// A trader: their PnL, Solana positions when the positions page has any,
-/// else their Solana holdings. With neither, `coverage` says the reply is
-/// only the profile's top-token summary and `solana_rows` is 0.
+/// A trader: their PnL, Solana holdings by value and their latest Solana
+/// positions. With neither, `coverage` says the reply is only the
+/// profile's top-token summary and `solana_rows` is 0.
 pub fn fomo_trader(user: &Value, positions: Option<&Value>, holdings: Option<&Value>) -> Value {
     let rows: Vec<Value> = positions
         .and_then(|p| p["trades"].as_array())
         .into_iter()
         .flatten()
         .filter(|p| solana(p))
-        .take(8)
+        .take(4)
         .map(|p| {
             json!({
                 "symbol": label(p["token"]["symbol"].as_str(), 20),
@@ -395,9 +395,9 @@ pub fn fomo_trader(user: &Value, positions: Option<&Value>, holdings: Option<&Va
             })
         })
         .collect();
-    let coverage = match (rows.is_empty(), held.is_empty()) {
-        (false, _) => "solana_positions",
-        (true, false) => "solana_holdings",
+    let coverage = match (held.is_empty(), rows.is_empty()) {
+        (false, _) => "solana_holdings",
+        (true, false) => "solana_positions",
         (true, true) => "top_token_summary",
     };
     json!({

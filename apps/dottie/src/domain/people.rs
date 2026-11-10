@@ -76,30 +76,22 @@ pub async fn people(rt: &Runtime, turn: &Turn, q: &Query<'_>) -> Result<Value, F
             let handle = handle(need(q.handle, "handle")?)?;
             let user = fomo.trader(&handle).await?;
             // A trader still resolving has no verified wallet yet: skip the
-            // positions read rather than spend on it.
-            let positions = if user["wallets"]["status"] == "resolving" {
-                None
-            } else {
-                match fomo.positions(&handle).await {
-                    Ok(p) => Some(p),
-                    Err(fail) => {
-                        turn.gap(format!("positions unavailable: {}", fail.message()));
-                        None
-                    }
+            // reads rather than spend on them. Holdings come sorted by value,
+            // so the big bags lead; the positions page is newest first and
+            // has no chain filter, so it only adds recent entries and PnL.
+            let resolving = user["wallets"]["status"] == "resolving";
+            let read = async |what: &str, r: Result<Value, Fail>| match r {
+                Ok(v) => Some(v),
+                Err(fail) => {
+                    turn.gap(format!("{what} unavailable: {}", fail.message()));
+                    None
                 }
             };
-            // The positions page has no chain filter; when it holds no
-            // Solana rows, one holdings read narrowed to Solana fills in.
-            let holdings = match &positions {
-                Some(p) if view::solana_positions(p) > 0 => None,
-                None if user["wallets"]["status"] == "resolving" => None,
-                _ => match fomo.solana_balances(&handle).await {
-                    Ok(b) => Some(b),
-                    Err(fail) => {
-                        turn.gap(format!("solana holdings unavailable: {}", fail.message()));
-                        None
-                    }
-                },
+            let (holdings, positions) = if resolving {
+                (None, None)
+            } else {
+                let (h, p) = tokio::join!(fomo.solana_balances(&handle), fomo.positions(&handle));
+                (read("solana holdings", h).await, read("positions", p).await)
             };
             view::fomo_trader(&user, positions.as_ref(), holdings.as_ref())
         }
